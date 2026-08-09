@@ -1,0 +1,909 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>MacXeneonEdgeTouchDriver — Performance Improvement Report</title>
+<style>
+  .viz-root {
+    color-scheme: light;
+    --surface-1: #fcfcfb;
+    --page: #f9f9f7;
+    --text-primary: #0b0b0b;
+    --text-secondary: #52514e;
+    --text-muted: #898781;
+    --grid: #e1e0d9;
+    --baseline: #c3c2b7;
+    --border: rgba(11,11,11,0.10);
+    --series-1: #2a78d6;   /* optimized */
+    --series-2: #eb6834;   /* baseline */
+    --delta-good: #006300;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:where(:not([data-theme="light"])) .viz-root {
+      color-scheme: dark;
+      --surface-1: #1a1a19;
+      --page: #0d0d0d;
+      --text-primary: #ffffff;
+      --text-secondary: #c3c2b7;
+      --text-muted: #898781;
+      --grid: #2c2c2a;
+      --baseline: #383835;
+      --border: rgba(255,255,255,0.10);
+      --series-1: #3987e5;
+      --series-2: #d95926;
+      --delta-good: #0ca30c;
+    }
+  }
+  :root[data-theme="dark"] .viz-root {
+    color-scheme: dark;
+    --surface-1: #1a1a19;
+    --page: #0d0d0d;
+    --text-primary: #ffffff;
+    --text-secondary: #c3c2b7;
+    --text-muted: #898781;
+    --grid: #2c2c2a;
+    --baseline: #383835;
+    --border: rgba(255,255,255,0.10);
+    --series-1: #3987e5;
+    --series-2: #d95926;
+    --delta-good: #0ca30c;
+  }
+
+  * { box-sizing: border-box; }
+  body.viz-root {
+    margin: 0;
+    background: var(--page);
+    color: var(--text-primary);
+    font-family: system-ui, -apple-system, "Segoe UI", sans-serif;
+    font-size: 15px;
+    line-height: 1.55;
+  }
+  .wrap { max-width: 960px; margin: 0 auto; padding: 40px 24px 80px; }
+
+  header.report-head { margin-bottom: 8px; }
+  .report-head h1 { font-size: 26px; font-weight: 650; margin: 0 0 4px; letter-spacing: -0.01em; }
+  .report-head .sub { color: var(--text-secondary); font-size: 14px; margin: 0; }
+  .theme-toggle {
+    float: right; margin-top: 4px;
+    background: var(--surface-1); color: var(--text-secondary);
+    border: 1px solid var(--border); border-radius: 8px;
+    padding: 5px 12px; font: inherit; font-size: 13px; cursor: pointer;
+  }
+
+  .hero {
+    background: var(--surface-1); border: 1px solid var(--border); border-radius: 12px;
+    padding: 28px 32px; margin: 24px 0 16px;
+    display: flex; align-items: baseline; gap: 24px; flex-wrap: wrap;
+  }
+  .hero .big { font-size: 56px; font-weight: 700; letter-spacing: -0.02em; color: var(--delta-good); line-height: 1; }
+  .hero .caption { color: var(--text-secondary); max-width: 520px; }
+  .hero .caption strong { color: var(--text-primary); }
+
+  .tiles { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 12px; margin: 0 0 32px; }
+  .tile { background: var(--surface-1); border: 1px solid var(--border); border-radius: 12px; padding: 16px 18px; }
+  .tile .label { font-size: 13px; color: var(--text-secondary); margin-bottom: 6px; }
+  .tile .value { font-size: 28px; font-weight: 650; letter-spacing: -0.01em; }
+  .tile .delta { font-size: 13px; color: var(--delta-good); font-weight: 600; margin-top: 2px; }
+  .tile .from { font-size: 12px; color: var(--text-muted); margin-top: 2px; }
+
+  section { margin: 40px 0; }
+  section h2 { font-size: 19px; font-weight: 650; margin: 0 0 4px; }
+  section .desc { color: var(--text-secondary); font-size: 14px; margin: 0 0 16px; max-width: 720px; }
+  .card { background: var(--surface-1); border: 1px solid var(--border); border-radius: 12px; padding: 20px; }
+  .charts-2col { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 12px; }
+  .card h3 { font-size: 14px; font-weight: 600; margin: 0 0 2px; }
+  .card .unit { font-size: 12px; color: var(--text-muted); margin: 0 0 10px; }
+
+  .legend { display: flex; gap: 18px; font-size: 13px; color: var(--text-secondary); margin: 4px 0 12px; flex-wrap: wrap; }
+  .legend .key { display: inline-flex; align-items: center; gap: 7px; }
+  .legend .swatch { width: 12px; height: 12px; border-radius: 3px; display: inline-block; }
+  .legend .linekey { width: 16px; height: 2px; border-radius: 1px; display: inline-block; }
+
+  svg text { font-family: system-ui, -apple-system, "Segoe UI", sans-serif; }
+  svg .grid-line { stroke: var(--grid); stroke-width: 1; }
+  svg .axis-line { stroke: var(--baseline); stroke-width: 1; }
+  svg .tick-label { fill: var(--text-muted); font-size: 11px; font-variant-numeric: tabular-nums; }
+  svg .cat-label { fill: var(--text-secondary); font-size: 12px; }
+  svg .val-label { fill: var(--text-primary); font-size: 12px; font-weight: 600; }
+  svg .val-label-out { fill: var(--text-secondary); font-size: 11.5px; font-weight: 600; }
+
+  .tooltip {
+    position: fixed; pointer-events: none; z-index: 50;
+    background: var(--surface-1); color: var(--text-primary);
+    border: 1px solid var(--border); border-radius: 8px;
+    box-shadow: 0 4px 16px rgba(0,0,0,0.18);
+    padding: 8px 12px; font-size: 13px; display: none; max-width: 260px;
+  }
+  .tooltip .tt-title { color: var(--text-secondary); font-size: 12px; margin-bottom: 4px; }
+  .tooltip .tt-row { display: flex; align-items: center; gap: 8px; margin: 2px 0; }
+  .tooltip .tt-key { width: 14px; height: 2.5px; border-radius: 1px; flex: none; }
+  .tooltip .tt-val { font-weight: 650; font-variant-numeric: tabular-nums; }
+  .tooltip .tt-name { color: var(--text-secondary); }
+
+  details.tableview { margin-top: 12px; }
+  details.tableview summary { font-size: 13px; color: var(--text-secondary); cursor: pointer; user-select: none; }
+  table.data { border-collapse: collapse; margin-top: 10px; font-size: 13px; width: 100%; }
+  table.data th, table.data td { text-align: right; padding: 5px 10px; border-bottom: 1px solid var(--grid); font-variant-numeric: tabular-nums; }
+  table.data th:first-child, table.data td:first-child { text-align: left; }
+  table.data th { color: var(--text-secondary); font-weight: 600; }
+
+  table.ledger { border-collapse: collapse; width: 100%; font-size: 14px; }
+  table.ledger th, table.ledger td { text-align: left; padding: 10px 12px; border-bottom: 1px solid var(--grid); vertical-align: top; }
+  table.ledger th { color: var(--text-secondary); font-weight: 600; font-size: 13px; }
+  table.ledger td.impact { white-space: nowrap; font-variant-numeric: tabular-nums; }
+  code { font-family: ui-monospace, "SF Mono", Menlo, monospace; font-size: 0.88em; background: var(--page); border: 1px solid var(--border); border-radius: 4px; padding: 1px 5px; }
+
+  .method p { color: var(--text-secondary); font-size: 14px; max-width: 760px; }
+  .method strong { color: var(--text-primary); }
+  footer { margin-top: 48px; color: var(--text-muted); font-size: 13px; border-top: 1px solid var(--grid); padding-top: 16px; }
+</style>
+</head>
+<body class="viz-root">
+<div class="wrap">
+
+<header class="report-head">
+  <button class="theme-toggle" id="themeToggle" type="button">Toggle theme</button>
+  <h1>Xeneon Edge Touch Driver — Performance Improvement Report</h1>
+  <p class="sub">Corsair Xeneon Edge touchscreen driver for macOS · branch <code>perf/pipeline-optimizations</code> · August 9, 2026 · Apple M3 Pro, macOS 15.7</p>
+</header>
+
+<div class="hero">
+  <div class="big">−91%</div>
+  <div class="caption">
+    <strong>End-to-end tap latency fell from 118.9&nbsp;ms to 11.0&nbsp;ms</strong> (p50, live hardware capture).
+    Seven optimizations across scheduling, accessibility, and event handling — plus a fix that makes the
+    first touch on an inactive window actually click, a case the baseline driver could not handle at any speed.
+  </div>
+</div>
+
+<div class="tiles">
+  <div class="tile">
+    <div class="label">Tap complete (p50)</div>
+    <div class="value">11.0 ms</div>
+    <div class="delta">−91%</div>
+    <div class="from">was 118.9 ms</div>
+  </div>
+  <div class="tile">
+    <div class="label">Touch to mouse-down (p50)</div>
+    <div class="value">9.7 ms</div>
+    <div class="delta">−80%</div>
+    <div class="from">was 48.0 ms</div>
+  </div>
+  <div class="tile">
+    <div class="label">Focus restore verified</div>
+    <div class="value">100%</div>
+    <div class="delta">was 6%</div>
+    <div class="from">50/50 taps, p50 1.0 ms</div>
+  </div>
+  <div class="tile">
+    <div class="label">Drag backlog staleness (p50)</div>
+    <div class="value">2.6 ms</div>
+    <div class="delta">−99.6%</div>
+    <div class="from">was 639.9 ms</div>
+  </div>
+</div>
+
+<section>
+  <h2>Tap latency across the optimization journey</h2>
+  <p class="desc">
+    Live captures on real hardware after each batch of changes, identical interaction protocol
+    (~90 s of taps and drags with light and heavy apps focused). The big drop came from moving the
+    LaunchAgent out of background QoS; the final step is the tuned tap timing plus the
+    inactive-window fix, whose 50&nbsp;ms activation wait applies only to cross-app taps.
+  </p>
+  <div class="card">
+    <h3>Median latency by phase</h3>
+    <p class="unit">milliseconds (p50), lower is better</p>
+    <div class="legend">
+      <span class="key"><span class="linekey" style="background:var(--series-2)"></span>tap-complete (HID up → mouse-up posted)</span>
+      <span class="key"><span class="linekey" style="background:var(--series-1)"></span>hid-to-down (HID down → mouse-down posted)</span>
+    </div>
+    <div id="journeyChart"></div>
+    <details class="tableview">
+      <summary>Table view</summary>
+      <table class="data" id="journeyTable"></table>
+    </details>
+  </div>
+</section>
+
+<section>
+  <h2>Baseline vs. final, percentile by percentile</h2>
+  <p class="desc">
+    The improvement holds across the distribution, not just the median. Final-capture tails (p99)
+    include genuine cross-application taps, where the driver now deliberately waits up to 50&nbsp;ms
+    for the target window to activate before clicking — latency spent buying correctness.
+  </p>
+  <div class="charts-2col">
+    <div class="card">
+      <h3>tap-complete</h3>
+      <p class="unit">milliseconds, lower is better</p>
+      <div class="legend">
+        <span class="key"><span class="swatch" style="background:var(--series-2)"></span>Baseline</span>
+        <span class="key"><span class="swatch" style="background:var(--series-1)"></span>Final</span>
+      </div>
+      <div id="pctTap"></div>
+    </div>
+    <div class="card">
+      <h3>hid-to-down</h3>
+      <p class="unit">milliseconds, lower is better</p>
+      <div class="legend">
+        <span class="key"><span class="swatch" style="background:var(--series-2)"></span>Baseline</span>
+        <span class="key"><span class="swatch" style="background:var(--series-1)"></span>Final</span>
+      </div>
+      <div id="pctHid"></div>
+    </div>
+  </div>
+  <div class="card" style="margin-top:12px">
+    <details class="tableview" open>
+      <summary>Table view — all live metrics, baseline vs. final</summary>
+      <table class="data">
+        <thead><tr><th>Metric</th><th>Capture</th><th>n</th><th>p50</th><th>p90</th><th>p99</th><th>max</th><th>verified</th></tr></thead>
+        <tbody>
+          <tr><td rowspan="2">tap-complete</td><td>Baseline</td><td>35</td><td>118.9</td><td>119.8</td><td>120.6</td><td>123.8</td><td>—</td></tr>
+          <tr><td>Final</td><td>50</td><td>11.0</td><td>12.5</td><td>16.6</td><td>32.8</td><td>—</td></tr>
+          <tr><td rowspan="2">hid-to-down</td><td>Baseline</td><td>35</td><td>48.0</td><td>66.2</td><td>68.2</td><td>79.7</td><td>—</td></tr>
+          <tr><td>Final</td><td>50</td><td>9.7</td><td>14.7</td><td>49.1</td><td>70.3</td><td>—</td></tr>
+          <tr><td rowspan="2">focus-restore</td><td>Baseline</td><td>34</td><td>5.3</td><td>10.8</td><td>12.5</td><td>12.6</td><td>2/34 (6%)</td></tr>
+          <tr><td>Final</td><td>50</td><td>1.0</td><td>2.3</td><td>23.0</td><td>31.1</td><td>50/50 (100%)</td></tr>
+          <tr><td>prepare-target</td><td>Final (new)</td><td>50</td><td>2.6</td><td>6.4</td><td>44.7</td><td>50.8</td><td>50/50 (100%)</td></tr>
+        </tbody>
+      </table>
+    </details>
+  </div>
+</section>
+
+<section>
+  <h2>Focus restore: from broken ritual to verified fast path</h2>
+  <p class="desc">
+    After every gesture the driver returns focus to the window that had it before the touch.
+    The baseline ran an eight-call accessibility sequence plus a synthetic title-bar click on
+    every tap — and its own verification said it almost never worked. The verification itself
+    was the bug: <code>CFEqual</code> fails across separately copied AXUIElement tokens.
+    With a pid-based comparison and a staged escalation ladder, 90% of restores now complete
+    with a single read-only check, and all of them verify — including genuine cross-application
+    restores introduced by the inactive-window fix.
+  </p>
+  <div class="charts-2col">
+    <div class="card">
+      <h3>Restores verified per capture</h3>
+      <p class="unit">percent of taps where restored focus was confirmed</p>
+      <div id="verifyChart"></div>
+    </div>
+    <div class="card">
+      <h3>Restore duration (p50)</h3>
+      <p class="unit">milliseconds, lower is better</p>
+      <div id="restoreChart"></div>
+    </div>
+  </div>
+  <div class="card" style="margin-top:12px">
+    <details class="tableview">
+      <summary>Table view — focus restore by phase</summary>
+      <table class="data">
+        <thead><tr><th>Phase</th><th>n</th><th>p50 (ms)</th><th>max (ms)</th><th>Verified</th><th>Dominant stage</th></tr></thead>
+        <tbody>
+          <tr><td>Baseline</td><td>34</td><td>5.3</td><td>12.6</td><td>6%</td><td>full sequence + title-click, every tap</td></tr>
+          <tr><td>QoS + staged restore</td><td>38</td><td>7.8</td><td>20.9</td><td>0%</td><td>escalated fully (verification broken)</td></tr>
+          <tr><td>Comparison fix</td><td>57</td><td>0.5</td><td>2.0</td><td>100%</td><td>fast path 57/57</td></tr>
+          <tr><td>Final (cross-app restores)</td><td>50</td><td>1.0</td><td>31.1</td><td>100%</td><td>fast path 45/50, attr-set 5/50</td></tr>
+        </tbody>
+      </table>
+    </details>
+  </div>
+</section>
+
+<section>
+  <h2>Drag responsiveness under load</h2>
+  <p class="desc">
+    Deterministic benchmark: 500 drag moves burst into the pipeline while the consumer takes
+    2&nbsp;ms per event, simulating a busy system. The baseline queued and replayed every stale
+    position — the cursor lagged over a second behind the finger. Move coalescing keeps only the
+    newest position, so staleness stays bounded and the cursor lands exactly where the finger is.
+  </p>
+  <div class="card">
+    <h3>Backlog staleness — age of each processed move</h3>
+    <p class="unit">milliseconds behind the finger, lower is better (log scale)</p>
+    <div class="legend">
+      <span class="key"><span class="swatch" style="background:var(--series-2)"></span>Baseline (queues all 500)</span>
+      <span class="key"><span class="swatch" style="background:var(--series-1)"></span>Final (coalesced)</span>
+    </div>
+    <div id="backlogChart"></div>
+    <details class="tableview">
+      <summary>Table view</summary>
+      <table class="data">
+        <thead><tr><th>Capture</th><th>p50 (ms)</th><th>max (ms)</th><th>Moves posted</th><th>Final position correct</th></tr></thead>
+        <tbody>
+          <tr><td>Baseline</td><td>639.9</td><td>1270.7</td><td>500/500 (all replayed)</td><td>yes, after 1.3 s</td></tr>
+          <tr><td>Final</td><td>2.6</td><td>5.1</td><td>2/500 (stale dropped)</td><td>yes, immediately</td></tr>
+        </tbody>
+      </table>
+    </details>
+  </div>
+</section>
+
+<section>
+  <h2>New capability: first touch on inactive windows</h2>
+  <p class="desc">
+    macOS consumes a click in an inactive window to activate it, so the baseline driver's first tap
+    on an unfocused kiosk did nothing visible — and because the driver restores focus after every
+    gesture, <em>every</em> tap became activation-only. The driver now resolves the window under the
+    touch point and activates it before the mouse-down. The cost profile below shows the fix is
+    nearly free when the target is already focused, which is the common case.
+  </p>
+  <div class="card">
+    <h3>prepare-target cost per tap (final capture, n=50)</h3>
+    <p class="unit">milliseconds by path taken</p>
+    <div id="prepareChart"></div>
+    <details class="tableview">
+      <summary>Table view</summary>
+      <table class="data">
+        <thead><tr><th>Path</th><th>Taps</th><th>Typical cost (ms)</th><th>What happens</th></tr></thead>
+        <tbody>
+          <tr><td>Fast path (already focused)</td><td>45/50</td><td>~2.6</td><td>one read-only accessibility check</td></tr>
+          <tr><td>Activate (was inactive)</td><td>5/50</td><td>~45</td><td>frontmost + focus + raise, verified before mouse-down</td></tr>
+        </tbody>
+      </table>
+    </details>
+  </div>
+</section>
+
+<section>
+  <h2>Optimization ledger</h2>
+  <p class="desc">Each change, what it fixed, and the measured impact.</p>
+  <div class="card">
+    <table class="ledger">
+      <thead><tr><th>Change</th><th>Root cause addressed</th><th class="impact">Measured impact</th></tr></thead>
+      <tbody>
+        <tr>
+          <td><strong>Interactive process type + user-interactive queue QoS</strong></td>
+          <td>launchd ran the driver as <code>ProcessType: Background</code>; macOS throttled its timers and queues (~38 ms of unexplained latency per tap)</td>
+          <td class="impact">tap p50 118.9 → 21.8 ms<br>hid-to-down 48.0 → 12.8 ms</td>
+        </tr>
+        <tr>
+          <td><strong>Staged focus restore + pid-based element comparison</strong></td>
+          <td><code>CFEqual</code> fails across separately copied AXUIElement tokens, so verification always failed and the full 8-call sequence + synthetic title-bar click ran on every tap</td>
+          <td class="impact">restore p50 5.3 → 0.5 ms<br>verified 6% → 100%</td>
+        </tr>
+        <tr>
+          <td><strong>Move-event coalescing</strong></td>
+          <td>every HID move was queued; under load the cursor replayed stale positions up to 1.3 s behind the finger</td>
+          <td class="impact">backlog staleness p50 639.9 → 2.6 ms</td>
+        </tr>
+        <tr>
+          <td><strong>Persistent stuck-gesture watchdog</strong></td>
+          <td>a new timer was created and cancelled per event at 100+ Hz during drags</td>
+          <td class="impact">drag cost 3.27 → ~1 µs/event</td>
+        </tr>
+        <tr>
+          <td><strong>Display reconfiguration debounce</strong></td>
+          <td>macOS fires reconfiguration callbacks per display per phase; each triggered a full display re-resolve, some against stale bounds</td>
+          <td class="impact">one refresh per burst; begin-phase reads eliminated</td>
+        </tr>
+        <tr>
+          <td><strong>Multi-contact state recovery</strong></td>
+          <td>a touch-down arriving before the previous tap's cleanup finished was dropped with a warning</td>
+          <td class="impact">rapid taps no longer swallowed</td>
+        </tr>
+        <tr>
+          <td><strong>Tuned tap timing (10/20/10 → 5/10/5 ms)</strong></td>
+          <td>sequencing delays sized for the throttled scheduler were twice as long as needed once QoS was fixed</td>
+          <td class="impact">tap p50 21.3 → 11.0 ms<br>reliability re-verified on hardware</td>
+        </tr>
+        <tr>
+          <td><strong>Inactive-window target preparation</strong></td>
+          <td>macOS consumes the first click in an inactive window to activate it; the driver never activated the target, so first taps did nothing</td>
+          <td class="impact">first tap now clicks; +2.6 ms typical, +45 ms only when target was inactive</td>
+        </tr>
+        <tr>
+          <td><strong>Cross-application focus restore</strong></td>
+          <td>restore never set <code>AXFrontmost</code> and checked focus synchronously, so cross-app restores (introduced by the fix above) escalated fully and failed</td>
+          <td class="impact">verified 0/38 → 50/50 across apps</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<section class="method">
+  <h2>Methodology</h2>
+  <p>
+    <strong>Live captures</strong> tail the driver's structured metric log for ~90 seconds while the
+    touchscreen is exercised with a fixed protocol: repeated taps and drags on the Xeneon display,
+    alternating between a lightweight focused app and a heavy one, and (final capture) between
+    kiosk-focused and primary-display-focused so cross-application paths are exercised. All timings
+    are measured inside the driver from HID report arrival timestamps to synthetic event posting;
+    percentiles are computed over each capture. Same physical hardware, same machine state discipline
+    (driver restarted, binary verified against the build) for every capture.
+  </p>
+  <p>
+    <strong>Deterministic benchmarks</strong> drive the production application object with fake input
+    sinks and cursor controllers, so results measure driver code, not CoreGraphics. Scenarios:
+    10,000-move drag burst (throughput), 500-move backlog with a 2 ms/event consumer (staleness), and
+    1M-report parser throughput (regression guard — unchanged at ~26 ns/report throughout). Three runs
+    per phase; representative run shown.
+  </p>
+  <p>
+    <strong>Honest accounting:</strong> the final capture's hid-to-down and tap-complete p99 values
+    (49.1 / 16.6 ms) are inflated relative to p50 by design — they include the ~5 cross-application taps
+    where the driver waits up to 50 ms for the target window to activate before posting the mouse-down.
+    The baseline had no such wait because it could not perform this action at all. Sample sizes are
+    modest (34–58 taps per capture); medians are stable across captures, tails are indicative.
+  </p>
+  <p>
+    Raw data: <code>benchmarks/results/</code> — baseline and per-phase live captures with raw logs,
+    plus deterministic runs. Reproduce with <code>Scripts/benchmark.sh 90</code> and
+    <code>swift run -c release Benchmarks all</code>.
+  </p>
+</section>
+
+<footer>
+  MacXeneonEdgeTouchDriver · perf/pipeline-optimizations · generated August 9, 2026 ·
+  charts: baseline/final series validated for color-vision deficiency in both themes
+</footer>
+
+</div>
+
+<div class="tooltip" id="tooltip"></div>
+
+<script>
+(function () {
+  "use strict";
+
+  // ---------- data ----------
+  var PHASES = ["Baseline", "QoS + focus", "Comparison fix", "Final (tuned)"];
+  var JOURNEY = {
+    tapComplete: [118.9, 21.8, 21.3, 11.0],
+    hidToDown:   [48.0, 12.8, 13.1, 9.7]
+  };
+  var PCT_LABELS = ["p50", "p90", "p99"];
+  var PCT = {
+    tap: { baseline: [118.9, 119.8, 120.6], final: [11.0, 12.5, 16.6] },
+    hid: { baseline: [48.0, 66.2, 68.2],   final: [9.7, 14.7, 49.1] }
+  };
+  var VERIFY = [
+    { phase: "Baseline", pct: 5.9, note: "2/34" },
+    { phase: "QoS + focus", pct: 0, note: "0/38" },
+    { phase: "Comparison fix", pct: 100, note: "57/57" },
+    { phase: "Final (tuned)", pct: 100, note: "50/50" }
+  ];
+  var RESTORE_P50 = [5.3, 7.8, 0.5, 1.0];
+  var BACKLOG = [
+    { label: "Baseline", p50: 639.9, max: 1270.7 },
+    { label: "Final", p50: 2.6, max: 5.1 }
+  ];
+  var PREPARE = [
+    { label: "Fast path (45 taps)", ms: 2.6, note: "target already focused — one read-only check" },
+    { label: "Activate (5 taps)", ms: 45.0, note: "target was inactive — activation verified before click" }
+  ];
+
+  var css = getComputedStyle(document.body);
+  function color(name) { return css.getPropertyValue(name).trim(); }
+  var NS = "http://www.w3.org/2000/svg";
+
+  function el(tag, attrs, parent) {
+    var node = document.createElementNS(NS, tag);
+    for (var k in attrs) { node.setAttribute(k, attrs[k]); }
+    if (parent) { parent.appendChild(node); }
+    return node;
+  }
+  function fmt(v) {
+    return v >= 100 ? v.toFixed(0) : v.toFixed(1);
+  }
+
+  // ---------- tooltip ----------
+  var tip = document.getElementById("tooltip");
+  function showTip(evt, title, rows) {
+    tip.textContent = "";
+    var t = document.createElement("div");
+    t.className = "tt-title";
+    t.textContent = title;
+    tip.appendChild(t);
+    rows.forEach(function (r) {
+      var row = document.createElement("div");
+      row.className = "tt-row";
+      var key = document.createElement("span");
+      key.className = "tt-key";
+      key.style.background = r.color;
+      row.appendChild(key);
+      var val = document.createElement("span");
+      val.className = "tt-val";
+      val.textContent = r.value;
+      row.appendChild(val);
+      var name = document.createElement("span");
+      name.className = "tt-name";
+      name.textContent = r.name;
+      row.appendChild(name);
+      tip.appendChild(row);
+    });
+    tip.style.display = "block";
+    moveTip(evt);
+  }
+  function moveTip(evt) {
+    var pad = 14;
+    var w = tip.offsetWidth, h = tip.offsetHeight;
+    var x = evt.clientX + pad, y = evt.clientY + pad;
+    if (x + w > window.innerWidth - 8) { x = evt.clientX - w - pad; }
+    if (y + h > window.innerHeight - 8) { y = evt.clientY - h - pad; }
+    tip.style.left = x + "px";
+    tip.style.top = y + "px";
+  }
+  function hideTip() { tip.style.display = "none"; }
+
+  // rounded-top vertical bar path (square at baseline)
+  function topRoundedBar(x, y, w, h, r) {
+    r = Math.min(r, w / 2, h);
+    return "M" + x + "," + (y + h) +
+      " L" + x + "," + (y + r) +
+      " Q" + x + "," + y + " " + (x + r) + "," + y +
+      " L" + (x + w - r) + "," + y +
+      " Q" + (x + w) + "," + y + " " + (x + w) + "," + (y + r) +
+      " L" + (x + w) + "," + (y + h) + " Z";
+  }
+  // rounded-right horizontal bar path (square at baseline/left)
+  function rightRoundedBar(x, y, w, h, r) {
+    r = Math.min(r, h / 2, w);
+    return "M" + x + "," + y +
+      " L" + (x + w - r) + "," + y +
+      " Q" + (x + w) + "," + y + " " + (x + w) + "," + (y + r) +
+      " L" + (x + w) + "," + (y + h - r) +
+      " Q" + (x + w) + "," + (y + h) + " " + (x + w - r) + "," + (y + h) +
+      " L" + x + "," + (y + h) + " Z";
+  }
+
+  function niceTicks(maxVal, count) {
+    var raw = maxVal / count;
+    var mag = Math.pow(10, Math.floor(Math.log10(raw)));
+    var step = [1, 2, 5, 10].map(function (m) { return m * mag; })
+      .find(function (s) { return maxVal / s <= count; }) || 10 * mag;
+    var ticks = [];
+    for (var v = 0; v <= maxVal + 1e-9; v += step) { ticks.push(v); }
+    return ticks;
+  }
+
+  // ---------- journey line chart ----------
+  function journeyChart() {
+    var W = 880, H = 300;
+    var m = { top: 16, right: 130, bottom: 44, left: 48 };
+    var iw = W - m.left - m.right, ih = H - m.top - m.bottom;
+    var maxV = 130;
+    var svg = el("svg", { viewBox: "0 0 " + W + " " + H, width: "100%", role: "img",
+      "aria-label": "Line chart of median tap-complete and hid-to-down latency across four optimization phases, falling from 118.9 and 48 milliseconds to 11 and 9.7 milliseconds." });
+    document.getElementById("journeyChart").appendChild(svg);
+
+    var xAt = function (i) { return m.left + (iw * i) / (PHASES.length - 1); };
+    var yAt = function (v) { return m.top + ih - (ih * v) / maxV; };
+
+    niceTicks(maxV, 5).forEach(function (t) {
+      el("line", { x1: m.left, x2: m.left + iw, y1: yAt(t), y2: yAt(t), class: "grid-line" }, svg);
+      el("text", { x: m.left - 8, y: yAt(t) + 4, "text-anchor": "end", class: "tick-label" }, svg)
+        .textContent = t.toLocaleString();
+    });
+    el("line", { x1: m.left, x2: m.left + iw, y1: yAt(0), y2: yAt(0), class: "axis-line" }, svg);
+    PHASES.forEach(function (p, i) {
+      el("text", { x: xAt(i), y: m.top + ih + 22, "text-anchor": i === 0 ? "start" : (i === PHASES.length - 1 ? "end" : "middle"), class: "cat-label" }, svg)
+        .textContent = p;
+    });
+
+    var series = [
+      { name: "tap-complete", vals: JOURNEY.tapComplete, color: color("--series-2") },
+      { name: "hid-to-down", vals: JOURNEY.hidToDown, color: color("--series-1") }
+    ];
+    series.forEach(function (s) {
+      var d = s.vals.map(function (v, i) { return (i ? "L" : "M") + xAt(i) + "," + yAt(v); }).join(" ");
+      el("path", { d: d, fill: "none", stroke: s.color, "stroke-width": 2,
+        "stroke-linejoin": "round", "stroke-linecap": "round" }, svg);
+      s.vals.forEach(function (v, i) {
+        el("circle", { cx: xAt(i), cy: yAt(v), r: 4.5, fill: s.color,
+          stroke: color("--surface-1"), "stroke-width": 2 }, svg);
+      });
+    });
+    // Direct end-labels: the two final values are close, so spread the labels
+    // apart and connect each to its line end with a leader line.
+    var endX = xAt(PHASES.length - 1);
+    var labelYs = series.map(function (s) { return yAt(s.vals[s.vals.length - 1]); });
+    var minGap = 34; // two-line labels need more vertical clearance
+    if (Math.abs(labelYs[0] - labelYs[1]) < minGap) {
+      var mid = (labelYs[0] + labelYs[1]) / 2;
+      var hi = labelYs[0] <= labelYs[1] ? 0 : 1;
+      labelYs[hi] = mid - minGap / 2;
+      labelYs[1 - hi] = mid + minGap / 2;
+    }
+    series.forEach(function (s, si) {
+      var last = s.vals[s.vals.length - 1];
+      var markY = yAt(last);
+      el("line", { x1: endX + 6, x2: endX + 16, y1: markY, y2: labelYs[si],
+        stroke: color("--baseline"), "stroke-width": 1 }, svg);
+      el("text", { x: endX + 20, y: labelYs[si] + 1, class: "val-label" }, svg)
+        .textContent = fmt(last) + " ms";
+      el("text", { x: endX + 20, y: labelYs[si] + 15, class: "cat-label", "font-size": "11" }, svg)
+        .textContent = s.name;
+    });
+    // label the dramatic starting points too
+    el("text", { x: xAt(0) + 10, y: yAt(JOURNEY.tapComplete[0]) - 8, class: "val-label-out" }, svg)
+      .textContent = "118.9 ms";
+    el("text", { x: xAt(0) + 10, y: yAt(JOURNEY.hidToDown[0]) - 8, class: "val-label-out" }, svg)
+      .textContent = "48.0 ms";
+
+    // crosshair + hover: one column region per phase
+    var cross = el("line", { y1: m.top, y2: m.top + ih, class: "axis-line", opacity: 0 }, svg);
+    var overlay = el("rect", { x: m.left, y: m.top, width: iw, height: ih, fill: "transparent" }, svg);
+    overlay.addEventListener("pointermove", function (evt) {
+      var box = svg.getBoundingClientRect();
+      var px = ((evt.clientX - box.left) / box.width) * W;
+      var i = Math.max(0, Math.min(PHASES.length - 1, Math.round(((px - m.left) / iw) * (PHASES.length - 1))));
+      cross.setAttribute("x1", xAt(i));
+      cross.setAttribute("x2", xAt(i));
+      cross.setAttribute("opacity", 1);
+      showTip(evt, PHASES[i], series.map(function (s) {
+        return { color: s.color, value: fmt(s.vals[i]) + " ms", name: s.name };
+      }));
+    });
+    overlay.addEventListener("pointerleave", function () {
+      cross.setAttribute("opacity", 0);
+      hideTip();
+    });
+
+    // table twin
+    var table = document.getElementById("journeyTable");
+    var thead = document.createElement("thead");
+    var hrow = document.createElement("tr");
+    ["Phase", "tap-complete p50 (ms)", "hid-to-down p50 (ms)"].forEach(function (h) {
+      var th = document.createElement("th"); th.textContent = h; hrow.appendChild(th);
+    });
+    thead.appendChild(hrow); table.appendChild(thead);
+    var tbody = document.createElement("tbody");
+    PHASES.forEach(function (p, i) {
+      var tr = document.createElement("tr");
+      [p, fmt(JOURNEY.tapComplete[i]), fmt(JOURNEY.hidToDown[i])].forEach(function (cell) {
+        var td = document.createElement("td"); td.textContent = cell; tr.appendChild(td);
+      });
+      tbody.appendChild(tr);
+    });
+    table.appendChild(tbody);
+  }
+
+  // ---------- grouped percentile bars ----------
+  function pctChart(mountId, data, maxV) {
+    var W = 420, H = 240;
+    var m = { top: 24, right: 12, bottom: 30, left: 44 };
+    var iw = W - m.left - m.right, ih = H - m.top - m.bottom;
+    var svg = el("svg", { viewBox: "0 0 " + W + " " + H, width: "100%", role: "img",
+      "aria-label": "Grouped bar chart comparing baseline and final latency at p50, p90, and p99." });
+    document.getElementById(mountId).appendChild(svg);
+
+    var yAt = function (v) { return m.top + ih - (ih * v) / maxV; };
+    niceTicks(maxV, 4).forEach(function (t) {
+      el("line", { x1: m.left, x2: m.left + iw, y1: yAt(t), y2: yAt(t), class: "grid-line" }, svg);
+      el("text", { x: m.left - 8, y: yAt(t) + 4, "text-anchor": "end", class: "tick-label" }, svg)
+        .textContent = t.toLocaleString();
+    });
+    el("line", { x1: m.left, x2: m.left + iw, y1: yAt(0), y2: yAt(0), class: "axis-line" }, svg);
+
+    var groupW = iw / PCT_LABELS.length;
+    var barW = 22, gap = 2;
+    PCT_LABELS.forEach(function (lab, i) {
+      var cx = m.left + groupW * i + groupW / 2;
+      el("text", { x: cx, y: m.top + ih + 20, "text-anchor": "middle", class: "cat-label" }, svg)
+        .textContent = lab;
+      [
+        { v: data.baseline[i], c: color("--series-2"), name: "Baseline", x: cx - barW - gap / 2 },
+        { v: data.final[i], c: color("--series-1"), name: "Final", x: cx + gap / 2 }
+      ].forEach(function (b) {
+        var y = yAt(b.v), h = m.top + ih - y;
+        var bar = el("path", { d: topRoundedBar(b.x, y, barW, h, 4), fill: b.c }, svg);
+        el("text", { x: b.x + barW / 2, y: y - 6, "text-anchor": "middle", class: "val-label-out" }, svg)
+          .textContent = fmt(b.v);
+        var hit = el("rect", { x: b.x - 4, y: m.top, width: barW + 8, height: ih, fill: "transparent" }, svg);
+        hit.addEventListener("pointermove", function (evt) {
+          bar.setAttribute("opacity", 0.82);
+          showTip(evt, lab, [{ color: b.c, value: fmt(b.v) + " ms", name: b.name }]);
+        });
+        hit.addEventListener("pointerleave", function () {
+          bar.setAttribute("opacity", 1);
+          hideTip();
+        });
+      });
+    });
+  }
+
+  // ---------- verified-rate bars ----------
+  function verifyChart() {
+    var W = 420, H = 240;
+    var m = { top: 24, right: 12, bottom: 46, left: 44 };
+    var iw = W - m.left - m.right, ih = H - m.top - m.bottom;
+    var svg = el("svg", { viewBox: "0 0 " + W + " " + H, width: "100%", role: "img",
+      "aria-label": "Bar chart of focus restore verification rate per capture: 6 percent, 0 percent, 100 percent, 100 percent." });
+    document.getElementById("verifyChart").appendChild(svg);
+
+    var yAt = function (v) { return m.top + ih - (ih * v) / 100; };
+    [0, 25, 50, 75, 100].forEach(function (t) {
+      el("line", { x1: m.left, x2: m.left + iw, y1: yAt(t), y2: yAt(t), class: "grid-line" }, svg);
+      el("text", { x: m.left - 8, y: yAt(t) + 4, "text-anchor": "end", class: "tick-label" }, svg)
+        .textContent = t + "%";
+    });
+    el("line", { x1: m.left, x2: m.left + iw, y1: yAt(0), y2: yAt(0), class: "axis-line" }, svg);
+
+    var slotW = iw / VERIFY.length, barW = 24;
+    VERIFY.forEach(function (d, i) {
+      var x = m.left + slotW * i + (slotW - barW) / 2;
+      var y = yAt(d.pct), h = Math.max(m.top + ih - y, d.pct > 0 ? 2 : 0);
+      var bar = null;
+      if (d.pct > 0) {
+        bar = el("path", { d: topRoundedBar(x, y, barW, h, 4), fill: color("--series-1") }, svg);
+      }
+      el("text", { x: x + barW / 2, y: yAt(d.pct) - 6, "text-anchor": "middle", class: "val-label-out" }, svg)
+        .textContent = d.pct === 0 ? "0%" : (d.pct < 10 ? d.pct + "%" : Math.round(d.pct) + "%");
+      wrapPhaseLabel(svg, d.phase, x + barW / 2, m.top + ih + 16);
+      var hit = el("rect", { x: m.left + slotW * i, y: m.top, width: slotW, height: ih, fill: "transparent" }, svg);
+      hit.addEventListener("pointermove", function (evt) {
+        if (bar) { bar.setAttribute("opacity", 0.82); }
+        showTip(evt, d.phase, [{ color: color("--series-1"), value: d.note + " verified", name: "focus restores" }]);
+      });
+      hit.addEventListener("pointerleave", function () {
+        if (bar) { bar.setAttribute("opacity", 1); }
+        hideTip();
+      });
+    });
+  }
+
+  // ---------- restore-duration bars ----------
+  function restoreChart() {
+    var W = 420, H = 240;
+    var m = { top: 24, right: 12, bottom: 46, left: 44 };
+    var iw = W - m.left - m.right, ih = H - m.top - m.bottom;
+    var maxV = 8;
+    var svg = el("svg", { viewBox: "0 0 " + W + " " + H, width: "100%", role: "img",
+      "aria-label": "Bar chart of median focus restore duration per capture: 5.3, 7.8, 0.5, and 1.0 milliseconds." });
+    document.getElementById("restoreChart").appendChild(svg);
+
+    var yAt = function (v) { return m.top + ih - (ih * v) / maxV; };
+    [0, 2, 4, 6, 8].forEach(function (t) {
+      el("line", { x1: m.left, x2: m.left + iw, y1: yAt(t), y2: yAt(t), class: "grid-line" }, svg);
+      el("text", { x: m.left - 8, y: yAt(t) + 4, "text-anchor": "end", class: "tick-label" }, svg)
+        .textContent = t;
+    });
+    el("line", { x1: m.left, x2: m.left + iw, y1: yAt(0), y2: yAt(0), class: "axis-line" }, svg);
+
+    var slotW = iw / RESTORE_P50.length, barW = 24;
+    RESTORE_P50.forEach(function (v, i) {
+      var x = m.left + slotW * i + (slotW - barW) / 2;
+      var y = yAt(v), h = m.top + ih - y;
+      var bar = el("path", { d: topRoundedBar(x, y, barW, h, 4), fill: color("--series-1") }, svg);
+      el("text", { x: x + barW / 2, y: y - 6, "text-anchor": "middle", class: "val-label-out" }, svg)
+        .textContent = fmt(v);
+      wrapPhaseLabel(svg, PHASES[i], x + barW / 2, m.top + ih + 16);
+      var hit = el("rect", { x: m.left + slotW * i, y: m.top, width: slotW, height: ih, fill: "transparent" }, svg);
+      hit.addEventListener("pointermove", function (evt) {
+        bar.setAttribute("opacity", 0.82);
+        showTip(evt, PHASES[i], [{ color: color("--series-1"), value: fmt(v) + " ms", name: "restore p50" }]);
+      });
+      hit.addEventListener("pointerleave", function () {
+        bar.setAttribute("opacity", 1);
+        hideTip();
+      });
+    });
+  }
+
+  function wrapPhaseLabel(svg, phase, cx, y) {
+    var words = phase.split(" ");
+    var line1 = words.slice(0, 2).join(" ");
+    var line2 = words.slice(2).join(" ");
+    var t1 = el("text", { x: cx, y: y, "text-anchor": "middle", class: "cat-label", "font-size": "11" }, svg);
+    t1.textContent = line1;
+    if (line2) {
+      var t2 = el("text", { x: cx, y: y + 13, "text-anchor": "middle", class: "cat-label", "font-size": "11" }, svg);
+      t2.textContent = line2;
+    }
+  }
+
+  // ---------- backlog log-scale horizontal bars ----------
+  function backlogChart() {
+    var W = 880, H = 190;
+    var m = { top: 10, right: 90, bottom: 34, left: 150 };
+    var iw = W - m.left - m.right, ih = H - m.top - m.bottom;
+    var minV = 1, maxV = 2000; // log domain, ms
+    var svg = el("svg", { viewBox: "0 0 " + W + " " + H, width: "100%", role: "img",
+      "aria-label": "Horizontal log-scale bars comparing drag backlog staleness: baseline median 639.9 milliseconds versus final 2.6 milliseconds." });
+    document.getElementById("backlogChart").appendChild(svg);
+
+    var xAt = function (v) {
+      return m.left + iw * (Math.log10(Math.max(v, minV)) - Math.log10(minV)) / (Math.log10(maxV) - Math.log10(minV));
+    };
+    [1, 10, 100, 1000].forEach(function (t) {
+      el("line", { x1: xAt(t), x2: xAt(t), y1: m.top, y2: m.top + ih, class: "grid-line" }, svg);
+      el("text", { x: xAt(t), y: m.top + ih + 20, "text-anchor": "middle", class: "tick-label" }, svg)
+        .textContent = t.toLocaleString() + " ms";
+    });
+    el("line", { x1: m.left, x2: m.left, y1: m.top, y2: m.top + ih, class: "axis-line" }, svg);
+
+    var rows = [
+      { label: "Baseline p50", v: BACKLOG[0].p50, c: color("--series-2"), extra: "max " + fmt(BACKLOG[0].max) + " ms" },
+      { label: "Final p50", v: BACKLOG[1].p50, c: color("--series-1"), extra: "max " + fmt(BACKLOG[1].max) + " ms" }
+    ];
+    var barH = 22, slotH = ih / rows.length;
+    rows.forEach(function (r, i) {
+      var y = m.top + slotH * i + (slotH - barH) / 2;
+      var w = xAt(r.v) - m.left;
+      var bar = el("path", { d: rightRoundedBar(m.left, y, w, barH, 4), fill: r.c }, svg);
+      el("text", { x: m.left - 10, y: y + barH / 2 + 4, "text-anchor": "end", class: "cat-label" }, svg)
+        .textContent = r.label;
+      el("text", { x: m.left + w + 8, y: y + barH / 2 + 4, class: "val-label" }, svg)
+        .textContent = fmt(r.v) + " ms";
+      var hit = el("rect", { x: m.left, y: m.top + slotH * i, width: iw, height: slotH, fill: "transparent" }, svg);
+      hit.addEventListener("pointermove", function (evt) {
+        bar.setAttribute("opacity", 0.82);
+        showTip(evt, r.label, [{ color: r.c, value: fmt(r.v) + " ms", name: r.extra }]);
+      });
+      hit.addEventListener("pointerleave", function () {
+        bar.setAttribute("opacity", 1);
+        hideTip();
+      });
+    });
+  }
+
+  // ---------- prepare-target horizontal bars ----------
+  function prepareChart() {
+    var W = 880, H = 170;
+    var m = { top: 10, right: 90, bottom: 30, left: 150 };
+    var iw = W - m.left - m.right, ih = H - m.top - m.bottom;
+    var maxV = 50;
+    var svg = el("svg", { viewBox: "0 0 " + W + " " + H, width: "100%", role: "img",
+      "aria-label": "Horizontal bars of inactive-window preparation cost: fast path 2.6 milliseconds on 45 of 50 taps; activation about 45 milliseconds on 5 of 50 taps." });
+    document.getElementById("prepareChart").appendChild(svg);
+
+    var xAt = function (v) { return m.left + iw * v / maxV; };
+    [0, 10, 20, 30, 40, 50].forEach(function (t) {
+      el("line", { x1: xAt(t), x2: xAt(t), y1: m.top, y2: m.top + ih, class: "grid-line" }, svg);
+      el("text", { x: xAt(t), y: m.top + ih + 18, "text-anchor": "middle", class: "tick-label" }, svg)
+        .textContent = t;
+    });
+    el("line", { x1: m.left, x2: m.left, y1: m.top, y2: m.top + ih, class: "axis-line" }, svg);
+
+    var barH = 22, slotH = ih / PREPARE.length;
+    PREPARE.forEach(function (r, i) {
+      var y = m.top + slotH * i + (slotH - barH) / 2;
+      var w = xAt(r.ms) - m.left;
+      var bar = el("path", { d: rightRoundedBar(m.left, y, w, barH, 4), fill: color("--series-1") }, svg);
+      el("text", { x: m.left - 10, y: y + barH / 2 + 4, "text-anchor": "end", class: "cat-label" }, svg)
+        .textContent = r.label;
+      el("text", { x: m.left + w + 8, y: y + barH / 2 + 4, class: "val-label" }, svg)
+        .textContent = fmt(r.ms) + " ms";
+      var hit = el("rect", { x: m.left, y: m.top + slotH * i, width: iw, height: slotH, fill: "transparent" }, svg);
+      hit.addEventListener("pointermove", function (evt) {
+        bar.setAttribute("opacity", 0.82);
+        showTip(evt, r.label, [{ color: color("--series-1"), value: fmt(r.ms) + " ms", name: r.note }]);
+      });
+      hit.addEventListener("pointerleave", function () {
+        bar.setAttribute("opacity", 1);
+        hideTip();
+      });
+    });
+  }
+
+  // ---------- theme toggle (rebuild charts so SVG picks up new tokens) ----------
+  document.getElementById("themeToggle").addEventListener("click", function () {
+    var root = document.documentElement;
+    var isDark = root.getAttribute("data-theme") === "dark" ||
+      (!root.getAttribute("data-theme") && window.matchMedia("(prefers-color-scheme: dark)").matches);
+    root.setAttribute("data-theme", isDark ? "light" : "dark");
+    ["journeyChart", "pctTap", "pctHid", "verifyChart", "restoreChart", "backlogChart", "prepareChart"]
+      .forEach(function (id) { document.getElementById(id).textContent = ""; });
+    document.getElementById("journeyTable").textContent = "";
+    css = getComputedStyle(document.body);
+    buildAll();
+  });
+
+  function buildAll() {
+    journeyChart();
+    pctChart("pctTap", PCT.tap, 130);
+    pctChart("pctHid", PCT.hid, 80);
+    verifyChart();
+    restoreChart();
+    backlogChart();
+    prepareChart();
+  }
+  buildAll();
+})();
+</script>
+</body>
+</html>

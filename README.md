@@ -52,6 +52,39 @@ Build a signed release binary:
 
 By default this uses ad-hoc signing. Set `CODESIGN_IDENTITY` for Developer ID signing and `NOTARIZATION_PROFILE` to submit the release archive with `xcrun notarytool`.
 
+### Stable Signing for Development (recommended)
+
+macOS ties the driver's Accessibility and Input Monitoring grants to the binary's
+code-signing identity. With ad-hoc signing (the default), every rebuild produces a
+**new** identity, so each reinstall silently invalidates your permission grants and the
+driver re-prompts — and because macOS queues rather than deduplicates permission
+dialogs, repeated prompting can pile up a backlog of dialogs you have to dismiss one by
+one. If you rebuild the driver more than once, create a stable self-signed certificate
+so grants survive reinstalls:
+
+1. Open **Keychain Access** → menu **Keychain Access → Certificate Assistant →
+   Create a Certificate…**
+2. Name: `XeneonDev` (any name works — use it consistently), Identity Type:
+   **Self-Signed Root**, Certificate Type: **Code Signing**.
+3. Create it into the **login** keychain.
+
+Then install with:
+
+```sh
+CODESIGN_IDENTITY=XeneonDev ./Scripts/install.sh
+```
+
+You will be prompted to grant Accessibility and Input Monitoring **once**; after that,
+rebuilds signed with the same identity keep their grants. The installer also skips
+reinstalling when the built binary is identical to the installed one, which preserves
+grants even across no-op installs.
+
+After any install, restart the agent so the new binary is actually the one running:
+
+```sh
+launchctl kickstart -k "gui/$(id -u)/com.ajvwhite.MacXeneonEdgeTouchDriver"
+```
+
 ## Configuration
 
 Optional config file:
