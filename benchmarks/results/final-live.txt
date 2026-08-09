@@ -1,0 +1,33 @@
+# Final live metrics: all optimizations applied
+# (QoS/Interactive, staged focus restore + elementsMatch + cross-app
+#  restore, persistent stuck-gesture timer, move coalescing, display
+#  debounce, multi-contact fix, inactive-window target preparation,
+#  tuned tap delays 5/10/5)
+# date: 2026-08-09
+# capture: Scripts/benchmark.sh 90, same protocol as baseline
+#          (taps + drags, kiosk-focused and primary-app-focused)
+# raw capture: final-live-raw.log
+
+=== Metric summary ===
+prepare-target   n=50    p50=2.6ms p90=6.4ms p99=44.7ms max=50.8ms  verified=50/50
+focus-restore    n=50    p50=1.0ms p90=2.3ms p99=23.0ms max=31.1ms  verified=50/50
+hid-to-down      n=50    p50=9.7ms p90=14.7ms p99=49.1ms max=70.3ms
+tap-complete     n=50    p50=11.0ms p90=12.5ms p99=16.6ms max=32.8ms
+
+# Stage breakdown:
+#   prepare-target: 45 fast-path / 5 activate
+#   focus-restore:  45 fast-path / 5 attr-set (no full-sequence, no title-click)
+#   The 5 activate + 5 attr-set samples are the same cross-app taps: target
+#   was genuinely inactive, got activated (~45ms wait), and focus returned
+#   to the primary app afterward. Zero "incomplete"/"could not verify"
+#   warnings in the capture.
+#
+# vs baseline (baseline-live.txt):
+#   hid-to-down   p50 48.0ms -> 9.7ms   (-80%)
+#   tap-complete  p50 118.9ms -> 11.0ms (-91%)
+#   focus-restore p50 5.3ms -> 1.0ms    (-81%), verified 6% -> 100%
+#   plus new capability: first tap on an inactive window now reaches the
+#   control (prepare-target), which baseline could not do at any speed.
+#
+# Note: hid-to-down/tap-complete p99 (~49/17ms) are the cross-app taps where
+# the 50ms activation wait is by design between touch-down and mouse-down.
