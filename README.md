@@ -126,6 +126,21 @@ driver emits under the `metrics` category (`hid-to-down`, `tap-complete`,
 then interact with the touchscreen. The script prints per-metric p50/p90/p99
 percentiles when the capture window ends.
 
+## Inactive Window Click-Through
+
+On macOS, a click in an inactive window is not guaranteed to reach the clicked control:
+AppKit consumes the initial mouse-down to activate the window unless the view opts into
+`acceptsFirstMouse(for:)`. Before posting a synthetic mouse-down, the driver therefore
+resolves the accessibility element at the mapped Xeneon coordinate and — only if its owning
+window is not already focused — makes that application/window frontmost, focused, main, and
+raised, waiting up to 50 ms for Accessibility to confirm. When the target is already focused
+(the common case for repeated kiosk taps) this is a single read-only check. After the
+gesture, the driver restores the exact window that was focused beforehand.
+
+If a first tap is still activation-only, inspect `driver.log` for `Target window preparation
+was incomplete`. The existing Accessibility permission covers both synthetic input and
+target-window preparation.
+
 ## Known Caveats
 
 - If the physical mouse is moved during a touch gesture, the cursor will return to the position captured when the touch began.

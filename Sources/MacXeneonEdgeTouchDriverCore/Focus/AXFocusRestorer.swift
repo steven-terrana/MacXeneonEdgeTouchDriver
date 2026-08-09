@@ -38,6 +38,103 @@ public final class AXFocusRestorer: FocusRestorer {
         capturedWindow = CapturedWindow(application: application, window: window)
     }
 
+    public func prepareTargetWindow(at point: CGPoint) {
+        let prepareStart = DispatchTime.now()
+        var didVerifyTarget = false
+        var stage = "fast-path"
+        defer {
+            DriverMetrics.recordPrepareTarget(
+                durationUs: DriverMetrics.microseconds(since: prepareStart),
+                verified: didVerifyTarget,
+                stage: stage
+            )
+        }
+
+        var hitElementValue: AXUIElement?
+        let hitTestResult = AXUIElementCopyElementAtPosition(
+            systemWideElement,
+            Float(point.x),
+            Float(point.y),
+            &hitElementValue
+        )
+        guard hitTestResult == .success, let hitElement = hitElementValue else {
+            DriverLoggers.log(
+                .debug,
+                category: .focus,
+                "Could not resolve the accessibility element under the touch point: \(hitTestResult.rawValue)."
+            )
+            return
+        }
+        AXUIElementSetMessagingTimeout(hitElement, Self.messagingTimeoutSeconds)
+
+        var targetPid: pid_t = 0
+        guard AXUIElementGetPid(hitElement, &targetPid) == .success else {
+            DriverLoggers.log(.debug, category: .focus, "Could not resolve the pid of the application under the touch point.")
+            return
+        }
+
+        let targetApplication = AXUIElementCreateApplication(targetPid)
+        AXUIElementSetMessagingTimeout(targetApplication, Self.messagingTimeoutSeconds)
+
+        guard let targetWindow = copyElementAttribute(hitElement, attribute: kAXWindowAttribute) else {
+            // Elements without a window (menu bar, desktop) cannot steal the
+            // first click, so no activation is needed.
+            DriverLoggers.log(.debug, category: .focus, "Touch point element has no owning window; skipping target preparation.")
+            return
+        }
+        AXUIElementSetMessagingTimeout(targetWindow, Self.messagingTimeoutSeconds)
+
+        // Fast path: the target window is already focused, so the mouse-down
+        // will reach the clicked control directly. One AX read pair, no writes.
+        if isWindowFocused(application: targetApplication, window: targetWindow) {
+            didVerifyTarget = true
+            return
+        }
+
+        // The target is inactive: activate it so macOS does not consume the
+        // first synthetic mouse-down as an activation click.
+        stage = "activate"
+        let frontmostResult = AXUIElementSetAttributeValue(
+            targetApplication,
+            kAXFrontmostAttribute as CFString,
+            kCFBooleanTrue
+        )
+        let focusedWindowResult = AXUIElementSetAttributeValue(
+            targetApplication,
+            kAXFocusedWindowAttribute as CFString,
+            targetWindow
+        )
+        let mainWindowResult = AXUIElementSetAttributeValue(
+            targetApplication,
+            kAXMainWindowAttribute as CFString,
+            targetWindow
+        )
+        let raiseResult = AXUIElementPerformAction(targetWindow, kAXRaiseAction as CFString)
+
+        // Activation propagates asynchronously; wait briefly so the mouse-down
+        // that follows lands in an already-active window. This blocks the
+        // gesture queue only when the target was genuinely inactive.
+        let deadline = DispatchTime.now() + .milliseconds(50)
+        while DispatchTime.now() < deadline {
+            if isWindowFocused(application: targetApplication, window: targetWindow) {
+                didVerifyTarget = true
+                break
+            }
+            Thread.sleep(forTimeInterval: 0.002)
+        }
+        if !didVerifyTarget {
+            didVerifyTarget = isWindowFocused(application: targetApplication, window: targetWindow)
+        }
+
+        if !didVerifyTarget {
+            DriverLoggers.log(
+                .warning,
+                category: .focus,
+                "Target window preparation was incomplete. frontmost=\(frontmostResult.rawValue), focusedWindow=\(focusedWindowResult.rawValue), mainWindow=\(mainWindowResult.rawValue), raise=\(raiseResult.rawValue)."
+            )
+        }
+    }
+
     public func restoreCapturedWindow() {
         guard let capturedWindow else {
             return
@@ -137,16 +234,20 @@ public final class AXFocusRestorer: FocusRestorer {
     }
 
     private func isWindowFocused(_ capturedWindow: CapturedWindow) -> Bool {
+        isWindowFocused(application: capturedWindow.application, window: capturedWindow.window)
+    }
+
+    private func isWindowFocused(application: AXUIElement, window: AXUIElement) -> Bool {
         guard let focusedApplication = copyElementAttribute(systemWideElement, attribute: kAXFocusedApplicationAttribute),
-              elementsMatch(focusedApplication, capturedWindow.application) else {
+              elementsMatch(focusedApplication, application) else {
             return false
         }
 
-        guard let focusedWindow = copyElementAttribute(capturedWindow.application, attribute: kAXFocusedWindowAttribute) else {
+        guard let focusedWindow = copyElementAttribute(application, attribute: kAXFocusedWindowAttribute) else {
             return false
         }
 
-        return elementsMatch(focusedWindow, capturedWindow.window)
+        return elementsMatch(focusedWindow, window)
     }
 
     /// Compares AX elements, falling back to pid equality for application

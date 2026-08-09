@@ -40,6 +40,16 @@ public enum DriverMetrics {
         DriverLoggers.log(.notice, category: .metrics, "metric=focus-restore duration_us=\(durationUs) verified=\(verified ? 1 : 0) stage=\(stage)")
     }
 
+    /// Records one target-window preparation before a mouse-down: duration,
+    /// whether the target verified as focused, and which path ran.
+    public static func recordPrepareTarget(durationUs: UInt64, verified: Bool, stage: String) {
+        guard isEnabled else {
+            return
+        }
+
+        DriverLoggers.log(.notice, category: .metrics, "metric=prepare-target duration_us=\(durationUs) verified=\(verified ? 1 : 0) stage=\(stage)")
+    }
+
     /// Records one display mapping refresh and the reason it ran.
     public static func recordDisplayRefresh(durationUs: UInt64, reason: String) {
         guard isEnabled else {

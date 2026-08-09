@@ -60,6 +60,10 @@ public final class GestureController {
                 return
             }
 
+            // Activate an inactive target before the mouse-down so macOS does
+            // not consume the first click purely to activate the window.
+            focusRestorer.prepareTargetWindow(at: point)
+
             state = .singleTouch(
                 SingleTouchContext(
                     contactID: event.contactID,
