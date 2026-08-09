@@ -114,17 +114,7 @@ public final class AXFocusRestorer: FocusRestorer {
         // Activation propagates asynchronously; wait briefly so the mouse-down
         // that follows lands in an already-active window. This blocks the
         // gesture queue only when the target was genuinely inactive.
-        let deadline = DispatchTime.now() + .milliseconds(50)
-        while DispatchTime.now() < deadline {
-            if isWindowFocused(application: targetApplication, window: targetWindow) {
-                didVerifyTarget = true
-                break
-            }
-            Thread.sleep(forTimeInterval: 0.002)
-        }
-        if !didVerifyTarget {
-            didVerifyTarget = isWindowFocused(application: targetApplication, window: targetWindow)
-        }
+        didVerifyTarget = waitForWindowFocus(application: targetApplication, window: targetWindow)
 
         if !didVerifyTarget {
             DriverLoggers.log(
@@ -159,14 +149,23 @@ public final class AXFocusRestorer: FocusRestorer {
             return
         }
 
-        // Do not use app-level AXFrontmost here; it raises sibling windows from the same application.
+        // Target preparation may have activated a different application, so
+        // restore must make the captured application frontmost again. Setting
+        // the focused window first pins which sibling window comes forward.
+        // Activation propagates asynchronously; poll briefly before deciding
+        // a stage failed, or every stage spuriously escalates.
         stage = "attr-set"
         let focusedWindowResult = AXUIElementSetAttributeValue(
             capturedWindow.application,
             kAXFocusedWindowAttribute as CFString,
             capturedWindow.window
         )
-        if isWindowFocused(capturedWindow) {
+        let frontmostResult = AXUIElementSetAttributeValue(
+            capturedWindow.application,
+            kAXFrontmostAttribute as CFString,
+            kCFBooleanTrue
+        )
+        if waitForWindowFocus(application: capturedWindow.application, window: capturedWindow.window) {
             didVerifyRestore = true
             return
         }
@@ -189,7 +188,7 @@ public final class AXFocusRestorer: FocusRestorer {
             kAXFocusedAttribute as CFString,
             kCFBooleanTrue
         )
-        if isWindowFocused(capturedWindow) {
+        if waitForWindowFocus(application: capturedWindow.application, window: capturedWindow.window) {
             didVerifyRestore = true
             return
         }
@@ -204,12 +203,12 @@ public final class AXFocusRestorer: FocusRestorer {
             capturedWindow.window
         )
 
-        didVerifyRestore = isWindowFocused(capturedWindow)
+        didVerifyRestore = waitForWindowFocus(application: capturedWindow.application, window: capturedWindow.window)
         guard didVerifyRestore else {
             DriverLoggers.log(
                 .warning,
                 category: .focus,
-                "Could not verify restore of the previously focused window. focusedWindow=\(focusedWindowResult.rawValue), mainWindow=\(mainWindowResult.rawValue), raise=\(raiseResult.rawValue), windowMain=\(mainResult.rawValue), windowFocused=\(focusedResult.rawValue), sessionClick=\(sessionClickResult), refocusedWindow=\(refocusedWindowResult.rawValue)."
+                "Could not verify restore of the previously focused window. focusedWindow=\(focusedWindowResult.rawValue), frontmost=\(frontmostResult.rawValue), mainWindow=\(mainWindowResult.rawValue), raise=\(raiseResult.rawValue), windowMain=\(mainResult.rawValue), windowFocused=\(focusedResult.rawValue), sessionClick=\(sessionClickResult), refocusedWindow=\(refocusedWindowResult.rawValue)."
             )
             return
         }
@@ -235,6 +234,21 @@ public final class AXFocusRestorer: FocusRestorer {
 
     private func isWindowFocused(_ capturedWindow: CapturedWindow) -> Bool {
         isWindowFocused(application: capturedWindow.application, window: capturedWindow.window)
+    }
+
+    /// Polls up to 50ms for the window to become system-wide focused, because
+    /// AX activation and raise operations propagate asynchronously.
+    private func waitForWindowFocus(application: AXUIElement, window: AXUIElement) -> Bool {
+        let deadline = DispatchTime.now() + .milliseconds(50)
+        while true {
+            if isWindowFocused(application: application, window: window) {
+                return true
+            }
+            guard DispatchTime.now() < deadline else {
+                return false
+            }
+            Thread.sleep(forTimeInterval: 0.002)
+        }
     }
 
     private func isWindowFocused(application: AXUIElement, window: AXUIElement) -> Bool {

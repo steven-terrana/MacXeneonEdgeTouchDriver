@@ -1,0 +1,54 @@
+# Final deterministic benchmarks: all optimizations applied
+# (QoS/Interactive, staged focus restore + elementsMatch, persistent
+#  stuck-gesture timer, move coalescing, display debounce, multi-contact fix,
+#  inactive-window target preparation, tuned tap delays 5/10/5)
+# date: 2026-08-09
+# protocol: swift run -c release Benchmarks all, 3 runs
+# note: deterministic scenarios use NoOpFocusRestorer and fake sinks, so tap
+#       delay tuning and target preparation do not affect these numbers; they
+#       confirm no pipeline regression from the click-through fix.
+
+--- run 1 ---
+== drag throughput (10000 moves, burst) ==
+  total=37.7ms events=10002 mean=3.77us/event throughput=265436 events/s
+  processed-move staleness: n=986 p50=25092.2us p90=34317.1us p99=36911.6us max=37235.5us
+  posted: down=1 drags=986 up=1 (coalescing drops superseded moves)
+
+== backlog staleness (500 moves, 2000us sink delay) ==
+  processed-move staleness: n=2 p50=2619.9us p90=2619.9us p99=2619.9us max=5147.6us
+  final point ok: true (moves processed: 2/500; coalescing drops superseded moves)
+
+== parser throughput (1000000 reports) ==
+  total=25.4ms mean=25ns/report events=1000000
+
+--- run 2 ---
+== drag throughput (10000 moves, burst) ==
+  total=27.3ms events=10002 mean=2.73us/event throughput=366133 events/s
+  processed-move staleness: n=1064 p50=13778.5us p90=24436.5us p99=26776.6us max=27144.8us
+  posted: down=1 drags=1064 up=1 (coalescing drops superseded moves)
+
+== backlog staleness (500 moves, 2000us sink delay) ==
+  processed-move staleness: n=2 p50=2612.2us p90=2612.2us p99=2612.2us max=5119.5us
+  final point ok: true (moves processed: 2/500; coalescing drops superseded moves)
+
+== parser throughput (1000000 reports) ==
+  total=26.9ms mean=27ns/report events=1000000
+
+--- run 3 ---
+== drag throughput (10000 moves, burst) ==
+  total=25.4ms events=10002 mean=2.54us/event throughput=393082 events/s
+  processed-move staleness: n=760 p50=15013.9us p90=23120.1us p99=24832.5us max=25269.0us
+  posted: down=1 drags=760 up=1 (coalescing drops superseded moves)
+
+== backlog staleness (500 moves, 2000us sink delay) ==
+  processed-move staleness: n=2 p50=2534.8us p90=2534.8us p99=2534.8us max=5052.9us
+  final point ok: true (moves processed: 2/500; coalescing drops superseded moves)
+
+== parser throughput (1000000 reports) ==
+  total=26.7ms mean=26ns/report events=1000000
+
+# vs baseline (baseline-deterministic.txt):
+# - backlog staleness p50 639.9ms / max 1270.7ms -> p50 ~2.6ms / max ~5.1ms
+#   (~245x), correct final position
+# - only the freshest move reaches the input sink under load (2/500 posted)
+# - parser unchanged (~26ns/report), confirming no parsing regression
