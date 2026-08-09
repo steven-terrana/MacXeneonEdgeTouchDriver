@@ -128,7 +128,14 @@ final class GestureControllerTests: XCTestCase {
         controller.handle(event(.down, rawX: 0, rawY: 0))
         controller.handle(event(.up, rawX: 0, rawY: 0))
 
-        XCTAssertEqual(focus.calls, [.captureFocusedWindow, .restoreCapturedWindow])
+        XCTAssertEqual(
+            focus.calls,
+            [
+                .captureFocusedWindow,
+                .prepareTargetWindow(CGPoint(x: 100, y: 200)),
+                .restoreCapturedWindow
+            ]
+        )
         XCTAssertEqual(cleanupOrder, ["cursorReturn", "focusRestore"])
     }
 
@@ -141,7 +148,14 @@ final class GestureControllerTests: XCTestCase {
         controller.handle(event(.down, rawX: 0, rawY: 0))
         controller.forceCancel()
 
-        XCTAssertEqual(focus.calls, [.captureFocusedWindow, .restoreCapturedWindow])
+        XCTAssertEqual(
+            focus.calls,
+            [
+                .captureFocusedWindow,
+                .prepareTargetWindow(CGPoint(x: 100, y: 200)),
+                .restoreCapturedWindow
+            ]
+        )
     }
 
     func testMoveBeforeDelayedMouseDownCancelsPendingMouseDown() {
@@ -270,6 +284,7 @@ final class GestureControllerTests: XCTestCase {
 private final class RecordingFocusRestorer: FocusRestorer {
     enum Call: Equatable {
         case captureFocusedWindow
+        case prepareTargetWindow(CGPoint)
         case restoreCapturedWindow
         case discardCapturedWindow
     }
@@ -286,6 +301,10 @@ private final class RecordingFocusRestorer: FocusRestorer {
 
     func captureFocusedWindow() {
         append(.captureFocusedWindow)
+    }
+
+    func prepareTargetWindow(at point: CGPoint) {
+        append(.prepareTargetWindow(point))
     }
 
     func restoreCapturedWindow() {

@@ -32,6 +32,91 @@ public final class AXFocusRestorer: FocusRestorer {
         capturedWindow = CapturedWindow(application: application, window: window)
     }
 
+    public func prepareTargetWindow(at point: CGPoint) {
+        var targetElement: AXUIElement?
+        let hitTestResult = AXUIElementCopyElementAtPosition(
+            systemWideElement,
+            Float(point.x),
+            Float(point.y),
+            &targetElement
+        )
+        guard hitTestResult == .success, let targetElement else {
+            DriverLoggers.log(
+                .debug,
+                category: .focus,
+                "Could not resolve the target accessibility element before touch click: \(hitTestResult.rawValue)."
+            )
+            return
+        }
+
+        var targetPID = pid_t()
+        let targetPIDResult = AXUIElementGetPid(targetElement, &targetPID)
+        guard targetPIDResult == .success else {
+            DriverLoggers.log(
+                .debug,
+                category: .focus,
+                "Could not resolve the target application pid before touch click: \(targetPIDResult.rawValue)."
+            )
+            return
+        }
+
+        let targetApplication = AXUIElementCreateApplication(targetPID)
+        let targetWindow = copyElementAttribute(targetElement, attribute: kAXWindowAttribute)
+
+        if let capturedWindow,
+           let targetWindow,
+           CFEqual(capturedWindow.application, targetApplication),
+           CFEqual(capturedWindow.window, targetWindow) {
+            return
+        }
+
+        let frontmostResult = AXUIElementSetAttributeValue(
+            targetApplication,
+            kAXFrontmostAttribute as CFString,
+            kCFBooleanTrue
+        )
+
+        guard let targetWindow else {
+            DriverLoggers.log(
+                .warning,
+                category: .focus,
+                "Target application activation had no resolvable window. frontmost=\(frontmostResult.rawValue)."
+            )
+            return
+        }
+
+        let focusedWindowResult = AXUIElementSetAttributeValue(
+            targetApplication,
+            kAXFocusedWindowAttribute as CFString,
+            targetWindow
+        )
+        let mainWindowResult = AXUIElementSetAttributeValue(
+            targetApplication,
+            kAXMainWindowAttribute as CFString,
+            targetWindow
+        )
+        let raiseResult = AXUIElementPerformAction(targetWindow, kAXRaiseAction as CFString)
+
+        let deadline = Date().addingTimeInterval(0.050)
+        while !isWindowFocused(application: targetApplication, window: targetWindow),
+              Date() < deadline {
+            Thread.sleep(forTimeInterval: 0.002)
+        }
+        let didFocusTarget = isWindowFocused(application: targetApplication, window: targetWindow)
+
+        if frontmostResult != .success ||
+            focusedWindowResult != .success ||
+            mainWindowResult != .success ||
+            raiseResult != .success ||
+            !didFocusTarget {
+            DriverLoggers.log(
+                .warning,
+                category: .focus,
+                "Target window preparation was incomplete. frontmost=\(frontmostResult.rawValue), focusedWindow=\(focusedWindowResult.rawValue), mainWindow=\(mainWindowResult.rawValue), raise=\(raiseResult.rawValue), verified=\(didFocusTarget)."
+            )
+        }
+    }
+
     public func restoreCapturedWindow() {
         guard let capturedWindow else {
             return
@@ -101,16 +186,20 @@ public final class AXFocusRestorer: FocusRestorer {
     }
 
     private func isWindowFocused(_ capturedWindow: CapturedWindow) -> Bool {
+        isWindowFocused(application: capturedWindow.application, window: capturedWindow.window)
+    }
+
+    private func isWindowFocused(application: AXUIElement, window: AXUIElement) -> Bool {
         guard let focusedApplication = copyElementAttribute(systemWideElement, attribute: kAXFocusedApplicationAttribute),
-              CFEqual(focusedApplication, capturedWindow.application) else {
+              CFEqual(focusedApplication, application) else {
             return false
         }
 
-        guard let focusedWindow = copyElementAttribute(capturedWindow.application, attribute: kAXFocusedWindowAttribute) else {
+        guard let focusedWindow = copyElementAttribute(application, attribute: kAXFocusedWindowAttribute) else {
             return false
         }
 
-        return CFEqual(focusedWindow, capturedWindow.window)
+        return CFEqual(focusedWindow, window)
     }
 
     private func clickCapturedWindowTitleBar(_ capturedWindow: CapturedWindow) -> Bool {

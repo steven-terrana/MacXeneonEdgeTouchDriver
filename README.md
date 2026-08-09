@@ -98,6 +98,25 @@ All fields are optional. Missing or malformed config falls back to defaults and 
 - Multi-contact gestures are not supported as the hardware doesn't report this information back.
 - If the process is killed with `SIGKILL`, normal shutdown cleanup cannot run. Relaunching the driver or moving the physical mouse after cursor association is restored may be needed.
 
+## Inactive Window Click-Through
+
+Before posting a synthetic mouse-down, the driver resolves the accessibility element at the
+mapped Xeneon coordinate and makes its owning application/window frontmost. This prevents
+macOS from consuming the first touch solely to activate an inactive Chrome kiosk. After the
+gesture, the driver restores the exact window that was focused beforehand.
+
+Physical acceptance check:
+
+1. Focus a normal application on the primary display.
+2. Tap one card action on the Xeneon exactly once.
+3. Confirm the card action occurs and the primary-display window regains focus.
+4. Repeat with Open, Complete, Close, Add card, and End run.
+
+If a first tap is still activation-only, inspect `driver.log` for `Target window preparation
+was incomplete`. The existing Accessibility permission is required both for synthetic input
+and for target-window preparation. The driver waits up to 50 ms for Accessibility to confirm
+that the target window is focused before it posts the mouse-down.
+
 ## Troubleshooting
 
 - If the driver exits immediately, check Accessibility permission for the exact binary location as provided by the install script.

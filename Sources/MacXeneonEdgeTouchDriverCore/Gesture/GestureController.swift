@@ -60,6 +60,8 @@ public final class GestureController {
                 return
             }
 
+            focusRestorer.prepareTargetWindow(at: point)
+
             state = .singleTouch(
                 SingleTouchContext(
                     contactID: event.contactID,
