@@ -9,7 +9,7 @@ public final class MacXeneonEdgeTouchDriverApplication {
     private let configuration: DriverConfiguration
     private let displayResolver: DisplayResolver
     private let mapperStore = CoordinateMapperStore()
-    private let gestureQueue = DispatchQueue(label: "\(DriverLoggers.subsystem).gesture-queue")
+    private let gestureQueue = DispatchQueue(label: "\(DriverLoggers.subsystem).gesture-queue", qos: .userInteractive)
     private let inputSink: SyntheticInputSink
     private let cursorController: CursorController
     private let focusRestorer: FocusRestorer
@@ -29,7 +29,7 @@ public final class MacXeneonEdgeTouchDriverApplication {
         eventQueue: gestureQueue,
         seizeDevice: true,
         touchEventHandler: { [weak self] event in
-            self?.handleTouchEvent(event)
+            self?.enqueueTouchEvent(event)
         },
         deviceRemovalHandler: { [weak self] in
             self?.handleDeviceRemoval()
@@ -40,6 +40,9 @@ public final class MacXeneonEdgeTouchDriverApplication {
     )
 
     private var stuckGestureTimer: DispatchSourceTimer?
+    private var lastGestureEventTime: DispatchTime = .now()
+    private let pendingMove = PendingMoveSlot()
+    private var pendingDisplayRefresh: DispatchWorkItem?
     private var signalSources: [DispatchSourceSignal] = []
     private var didRegisterDisplayCallback = false
     private var isRunning = false
@@ -86,10 +89,7 @@ public final class MacXeneonEdgeTouchDriverApplication {
             self?.cancelStuckGestureTimer()
         }
 
-        guard verifySyntheticEventPermission() else {
-            stop()
-            return EXIT_FAILURE
-        }
+        waitForSyntheticEventPermission()
 
         refreshDisplayMapping(reason: "startup")
         registerDisplayReconfigurationCallback()
@@ -115,6 +115,8 @@ public final class MacXeneonEdgeTouchDriverApplication {
 
         hidMonitor.stop()
         gestureQueue.sync {
+            pendingDisplayRefresh?.cancel()
+            pendingDisplayRefresh = nil
             cancelStuckGestureTimer()
             gestureController.forceCancel()
         }
@@ -126,15 +128,36 @@ public final class MacXeneonEdgeTouchDriverApplication {
         CFRunLoopStop(CFRunLoopGetMain())
     }
 
+    /// Coalesces reconfiguration callbacks: macOS fires one per display and
+    /// again per phase, so a single hotplug produces a burst. One debounced
+    /// refresh handles the whole burst once the configuration settles.
     fileprivate func handleDisplayReconfiguration() {
         gestureQueue.async { [weak self] in
-            self?.refreshDisplayMapping(reason: "display reconfiguration")
+            guard let self else {
+                return
+            }
+
+            self.pendingDisplayRefresh?.cancel()
+            let workItem = DispatchWorkItem { [weak self] in
+                guard let self else {
+                    return
+                }
+                self.pendingDisplayRefresh = nil
+                self.refreshDisplayMapping(reason: "display reconfiguration")
+            }
+            self.pendingDisplayRefresh = workItem
+            self.gestureQueue.asyncAfter(deadline: .now() + .milliseconds(250), execute: workItem)
         }
     }
 
     private func refreshDisplayMapping(reason: String) {
+        let refreshStart = DispatchTime.now()
         displayResolver.refresh()
         mapperStore.currentMapper = displayResolver.currentMapper
+        DriverMetrics.recordDisplayRefresh(
+            durationUs: DriverMetrics.microseconds(since: refreshStart),
+            reason: reason
+        )
 
         if let bounds = displayResolver.currentBounds {
             DriverLoggers.log(
@@ -151,6 +174,38 @@ public final class MacXeneonEdgeTouchDriverApplication {
         }
     }
 
+    /// Enqueues a touch event on the gesture queue, coalescing move events.
+    ///
+    /// Downs and ups are always dispatched in order. A move overwrites the
+    /// pending-move slot instead of enqueuing when a move is already waiting,
+    /// so a backlog never makes the cursor replay stale positions — each drain
+    /// processes the newest position available.
+    public func enqueueTouchEvent(_ event: TouchEvent) {
+        guard event.kind == .move else {
+            gestureQueue.async { [weak self] in
+                self?.handleTouchEvent(event)
+            }
+            return
+        }
+
+        let hadPendingMove = pendingMove.replace(with: event)
+        guard !hadPendingMove else {
+            return
+        }
+
+        gestureQueue.async { [weak self] in
+            guard let self, let move = self.pendingMove.take() else {
+                return
+            }
+            self.handleTouchEvent(move)
+        }
+    }
+
+    /// Blocks until all currently enqueued gesture work has been processed.
+    public func drainGestureQueue() {
+        gestureQueue.sync {}
+    }
+
     func handleTouchEvent(_ event: TouchEvent) {
         if mapperStore.currentMapper == nil {
             refreshDisplayMapping(reason: "touch event without display mapper")
@@ -163,7 +218,8 @@ public final class MacXeneonEdgeTouchDriverApplication {
             cancelStuckGestureTimer()
 
         case .singleTouch:
-            scheduleStuckGestureTimer()
+            lastGestureEventTime = DispatchTime.now()
+            ensureStuckGestureTimer()
         }
     }
 
@@ -176,15 +232,40 @@ public final class MacXeneonEdgeTouchDriverApplication {
         gestureController.forceCancel()
     }
 
-    private func scheduleStuckGestureTimer() {
-        cancelStuckGestureTimer()
+    /// Arms the stuck-gesture watchdog if not already armed.
+    ///
+    /// One timer is created per gesture rather than per event; move events at
+    /// 100+ Hz only update `lastGestureEventTime`. When the timer fires it
+    /// checks event recency and re-arms itself for the remainder, so cleanup
+    /// still only happens after a full quiet timeout.
+    private func ensureStuckGestureTimer() {
+        guard stuckGestureTimer == nil else {
+            return
+        }
 
+        armStuckGestureTimer(afterMs: configuration.timing.stuckGestureTimeoutMs)
+    }
+
+    private func armStuckGestureTimer(afterMs: Int) {
         let timer = DispatchSource.makeTimerSource(queue: gestureQueue)
-        timer.schedule(deadline: .now() + .milliseconds(configuration.timing.stuckGestureTimeoutMs))
+        timer.schedule(deadline: .now() + .milliseconds(afterMs))
         timer.setEventHandler { [weak self] in
+            guard let self else {
+                return
+            }
+            self.stuckGestureTimer = nil
+
+            let timeoutNs = UInt64(self.configuration.timing.stuckGestureTimeoutMs) * 1_000_000
+            let elapsedNs = DispatchTime.now().uptimeNanoseconds - self.lastGestureEventTime.uptimeNanoseconds
+            if elapsedNs < timeoutNs {
+                // Events arrived since arming; re-arm for the remaining window.
+                let remainingMs = Int((timeoutNs - elapsedNs) / 1_000_000) + 1
+                self.armStuckGestureTimer(afterMs: remainingMs)
+                return
+            }
+
             DriverLoggers.log(.warning, category: .gesture, "Touch gesture timed out without an up event; forcing cleanup.")
-            self?.gestureController.handleIdleTimeout()
-            self?.stuckGestureTimer = nil
+            self.gestureController.handleIdleTimeout()
         }
         timer.resume()
         stuckGestureTimer = timer
@@ -239,34 +320,81 @@ public final class MacXeneonEdgeTouchDriverApplication {
         }
     }
 
-    private func verifySyntheticEventPermission() -> Bool {
-        if CGPreflightPostEventAccess() {
+    /// Blocks until synthetic event permission is granted.
+    ///
+    /// Shows the OS permission prompt at most once per install, tracked by a
+    /// marker file, then polls quietly. macOS queues rather than deduplicates
+    /// TCC prompts, so any repeated prompting (e.g. across relaunches)
+    /// accumulates a backlog of dialogs the user has to dismiss one by one.
+    private func waitForSyntheticEventPermission() {
+        if hasSyntheticEventPermission() {
             DriverLoggers.log(.notice, category: .lifecycle, "CoreGraphics post-event permission is granted.")
-            return true
+            return
         }
 
         logPermissionIdentity()
-        DriverLoggers.log(.error, category: .lifecycle, "CoreGraphics post-event permission is not granted; requesting permission if macOS will show a prompt.")
+        DriverLoggers.log(.error, category: .lifecycle, "CoreGraphics post-event permission is not granted.")
 
-        if CGRequestPostEventAccess() {
-            DriverLoggers.log(.notice, category: .lifecycle, "CoreGraphics post-event permission was granted after request.")
-            return true
-        }
+        if shouldShowPermissionPrompt() {
+            markPermissionPromptShown()
+            DriverLoggers.log(.notice, category: .lifecycle, "Requesting permission; macOS will show a one-time prompt.")
 
-        let promptKey = kAXTrustedCheckOptionPrompt.takeUnretainedValue() as String
-        let options = [promptKey: true] as CFDictionary
-        let isAXTrusted = AXIsProcessTrustedWithOptions(options)
-        if isAXTrusted || CGPreflightPostEventAccess() {
-            DriverLoggers.log(.notice, category: .lifecycle, "Accessibility trust is granted after prompt.")
-            return true
+            if CGRequestPostEventAccess() {
+                DriverLoggers.log(.notice, category: .lifecycle, "CoreGraphics post-event permission was granted after request.")
+                return
+            }
+
+            let promptKey = kAXTrustedCheckOptionPrompt.takeUnretainedValue() as String
+            let options = [promptKey: true] as CFDictionary
+            if AXIsProcessTrustedWithOptions(options) || hasSyntheticEventPermission() {
+                DriverLoggers.log(.notice, category: .lifecycle, "Accessibility trust is granted after prompt.")
+                return
+            }
         }
 
         DriverLoggers.log(
             .fault,
             category: .lifecycle,
-            "Synthetic mouse event permission is not granted. Grant Accessibility to the executable or to the launcher app named in the previous log line, then restart the driver."
+            "Synthetic mouse event permission is not granted. Waiting for Accessibility to be granted to the executable named in the previous log line; the driver will start automatically once it is."
         )
-        return false
+
+        var waitedSeconds = 0
+        while !hasSyntheticEventPermission() {
+            Thread.sleep(forTimeInterval: 2)
+            waitedSeconds += 2
+            if waitedSeconds % 60 == 0 {
+                DriverLoggers.log(.notice, category: .lifecycle, "Still waiting for Accessibility permission (\(waitedSeconds)s).")
+            }
+        }
+
+        DriverLoggers.log(.notice, category: .lifecycle, "Accessibility permission granted; starting driver.")
+    }
+
+    private func hasSyntheticEventPermission() -> Bool {
+        CGPreflightPostEventAccess() || AXIsProcessTrusted()
+    }
+
+    /// Marker file recording that this installed binary already showed the OS
+    /// permission prompt. Removed by the installer when the binary changes.
+    private static var permissionPromptMarkerURL: URL {
+        FileManager.default.homeDirectoryForCurrentUser
+            .appendingPathComponent("Library", isDirectory: true)
+            .appendingPathComponent("Application Support", isDirectory: true)
+            .appendingPathComponent("MacXeneonEdgeTouchDriver", isDirectory: true)
+            .appendingPathComponent(".permission-prompt-shown", isDirectory: false)
+    }
+
+    private func shouldShowPermissionPrompt() -> Bool {
+        !FileManager.default.fileExists(atPath: Self.permissionPromptMarkerURL.path)
+    }
+
+    private func markPermissionPromptShown() {
+        let url = Self.permissionPromptMarkerURL
+        try? FileManager.default.createDirectory(
+            at: url.deletingLastPathComponent(),
+            withIntermediateDirectories: true
+        )
+        FileManager.default.createFile(atPath: url.path, contents: nil)
     }
 
     private func logPermissionIdentity() {
@@ -288,6 +416,30 @@ public final class MacXeneonEdgeTouchDriverApplication {
     }
 }
 
+/// Lock-protected slot holding the newest undelivered move event.
+private final class PendingMoveSlot {
+    private let lock = NSLock()
+    private var event: TouchEvent?
+
+    /// Stores `event`, returning whether a move was already pending.
+    func replace(with event: TouchEvent) -> Bool {
+        lock.lock()
+        defer { lock.unlock() }
+        let hadPending = self.event != nil
+        self.event = event
+        return hadPending
+    }
+
+    /// Removes and returns the pending move, if any.
+    func take() -> TouchEvent? {
+        lock.lock()
+        defer { lock.unlock() }
+        let taken = event
+        event = nil
+        return taken
+    }
+}
+
 private final class CoordinateMapperStore {
     private let lock = NSLock()
     private var storedMapper: CoordinateMapper?
@@ -306,8 +458,14 @@ private final class CoordinateMapperStore {
     }
 }
 
-private let displayReconfigurationCallback: CGDisplayReconfigurationCallBack = { _, _, context in
+private let displayReconfigurationCallback: CGDisplayReconfigurationCallBack = { _, flags, context in
     guard let context else {
+        return
+    }
+
+    // The begin phase fires before the configuration actually changes;
+    // refreshing then reads stale bounds. Wait for the completion callback.
+    guard !flags.contains(.beginConfigurationFlag) else {
         return
     }
 

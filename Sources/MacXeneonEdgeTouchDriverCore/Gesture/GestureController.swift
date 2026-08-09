@@ -64,6 +64,7 @@ public final class GestureController {
                 SingleTouchContext(
                     contactID: event.contactID,
                     startPoint: point,
+                    downTimestamp: event.timestamp,
                     lastPoint: point,
                     lastRawX: event.rawX,
                     lastRawY: event.rawY,
@@ -118,8 +119,14 @@ public final class GestureController {
         case (.idle, .move), (.idle, .up):
             DriverLoggers.log(.debug, category: .gesture, "Ignoring touch event while idle.")
 
-        case (.singleTouch, .down):
-            DriverLoggers.log(.warning, category: .gesture, "Received touch down while already tracking a single touch.")
+        case (.singleTouch(let context), .down):
+            // A new down while tracking means the previous tap's delayed
+            // cleanup (mouse-up/cursor-return) had not finished when the next
+            // tap began — common during rapid tapping. Complete the previous
+            // gesture immediately, then handle this event as a fresh down.
+            DriverLoggers.log(.debug, category: .gesture, "Touch down during previous gesture cleanup; completing gesture for contact \(context.contactID) and starting a new one.")
+            forceCancel()
+            handle(event)
         }
     }
 
@@ -173,6 +180,7 @@ public final class GestureController {
         }
 
         inputSink.postMouseDown(at: point)
+        DriverMetrics.recordHIDToDown(durationUs: DriverMetrics.microseconds(since: context.downTimestamp))
         context.isMouseDownPosted = true
         state = .singleTouch(context)
         pendingMouseDown = nil
@@ -190,6 +198,9 @@ public final class GestureController {
         }
 
         inputSink.postMouseUp(at: point)
+        if let lastCompletedTouchTimestamp {
+            DriverMetrics.recordTapComplete(durationUs: DriverMetrics.microseconds(since: lastCompletedTouchTimestamp))
+        }
         pendingMouseUp = nil
         pendingCursorReturn = schedule(after: timing.clickToWarpBackDelayMs) { [weak self] in
             self?.returnCursorAndIdle(contactID: contactID)

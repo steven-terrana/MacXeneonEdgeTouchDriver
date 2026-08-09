@@ -33,7 +33,32 @@ echo "Building ${binary_name} in release mode..."
 swift build -c release --package-path "$package_root"
 
 mkdir -p "$bin_dir" "$log_dir" "$launch_agents_dir"
-install -m 755 "${package_root}/.build/release/${binary_name}" "$installed_binary"
+
+built_binary="${package_root}/.build/release/${binary_name}"
+
+# Sign with a stable identity when available so macOS permission grants
+# (Accessibility, Input Monitoring) survive rebuilds. Ad-hoc signatures change
+# with every build, which invalidates prior grants.
+if [ -n "${CODESIGN_IDENTITY:-}" ]; then
+  echo "Signing with identity: ${CODESIGN_IDENTITY}"
+  codesign --force --options runtime --timestamp --sign "$CODESIGN_IDENTITY" "$built_binary"
+fi
+
+# Skip replacing an identical binary so unchanged reinstalls keep the existing
+# permission grants.
+if [ -f "$installed_binary" ] && cmp -s "$built_binary" "$installed_binary"; then
+  echo "Installed binary is already up to date; keeping existing binary and permission grants."
+else
+  install -m 755 "$built_binary" "$installed_binary"
+  # New binary identity: allow exactly one fresh permission prompt.
+  rm -f "${app_support_dir}/.permission-prompt-shown"
+  if [ -z "${CODESIGN_IDENTITY:-}" ]; then
+    echo "NOTE: binary changed and is ad-hoc signed. macOS will treat it as a new app;"
+    echo "      re-grant Accessibility and Input Monitoring (toggle off and on) for:"
+    echo "      ${installed_binary}"
+  fi
+fi
+
 touch "${log_dir}/stdout.log" "${log_dir}/stderr.log" "$driver_log_path"
 
 if [ ! -f "$config_path" ]; then

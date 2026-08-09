@@ -15,6 +15,9 @@ public struct SingleTouchContext: Equatable {
     /// Initial mapped Quartz-coordinate point for the gesture.
     public let startPoint: CGPoint
 
+    /// HID arrival timestamp of the touch-down event, used for latency metrics.
+    public var downTimestamp: DispatchTime = .init(uptimeNanoseconds: 0)
+
     /// Last mapped Quartz-coordinate point.
     public var lastPoint: CGPoint
 

@@ -1,0 +1,189 @@
+2026-08-09T16:38:35.566-04:00 NOTICE [metrics] metric=hid-to-down duration_us=47592
+2026-08-09T16:38:35.591-04:00 NOTICE [metrics] metric=tap-complete duration_us=24750
+2026-08-09T16:38:35.629-04:00 WARNING [focus] Could not verify restore of the previously focused window. focusedWindow=0, mainWindow=0, raise=0, windowMain=0, windowFocused=0, sessionClick=true, refocusedWindow=0.
+2026-08-09T16:38:35.629-04:00 NOTICE [metrics] metric=focus-restore duration_us=10825 verified=0
+2026-08-09T16:38:36.194-04:00 NOTICE [metrics] metric=hid-to-down duration_us=12928
+2026-08-09T16:38:36.255-04:00 NOTICE [metrics] metric=tap-complete duration_us=24120
+2026-08-09T16:38:36.281-04:00 WARNING [focus] Could not verify restore of the previously focused window. focusedWindow=0, mainWindow=0, raise=0, windowMain=0, windowFocused=0, sessionClick=true, refocusedWindow=0.
+2026-08-09T16:38:36.281-04:00 NOTICE [metrics] metric=focus-restore duration_us=4478 verified=0
+2026-08-09T16:38:36.792-04:00 NOTICE [metrics] metric=hid-to-down duration_us=12027
+2026-08-09T16:38:36.835-04:00 NOTICE [metrics] metric=tap-complete duration_us=21994
+2026-08-09T16:38:36.866-04:00 WARNING [focus] Could not verify restore of the previously focused window. focusedWindow=0, mainWindow=0, raise=0, windowMain=0, windowFocused=0, sessionClick=true, refocusedWindow=0.
+2026-08-09T16:38:36.866-04:00 NOTICE [metrics] metric=focus-restore duration_us=3822 verified=0
+2026-08-09T16:38:37.322-04:00 NOTICE [metrics] metric=hid-to-down duration_us=13192
+2026-08-09T16:38:37.382-04:00 NOTICE [metrics] metric=tap-complete duration_us=23430
+2026-08-09T16:38:37.414-04:00 WARNING [focus] Could not verify restore of the previously focused window. focusedWindow=0, mainWindow=0, raise=0, windowMain=0, windowFocused=0, sessionClick=true, refocusedWindow=0.
+2026-08-09T16:38:37.414-04:00 NOTICE [metrics] metric=focus-restore duration_us=10318 verified=0
+2026-08-09T16:38:37.855-04:00 NOTICE [metrics] metric=hid-to-down duration_us=13079
+2026-08-09T16:38:37.930-04:00 NOTICE [metrics] metric=tap-complete duration_us=24503
+2026-08-09T16:38:37.964-04:00 WARNING [focus] Could not verify restore of the previously focused window. focusedWindow=0, mainWindow=0, raise=0, windowMain=0, windowFocused=0, sessionClick=true, refocusedWindow=0.
+2026-08-09T16:38:37.964-04:00 NOTICE [metrics] metric=focus-restore duration_us=10565 verified=0
+2026-08-09T16:38:38.307-04:00 NOTICE [metrics] metric=hid-to-down duration_us=17498
+2026-08-09T16:38:38.362-04:00 NOTICE [metrics] metric=tap-complete duration_us=24731
+2026-08-09T16:38:38.396-04:00 WARNING [focus] Could not verify restore of the previously focused window. focusedWindow=0, mainWindow=0, raise=0, windowMain=0, windowFocused=0, sessionClick=true, refocusedWindow=0.
+2026-08-09T16:38:38.396-04:00 NOTICE [metrics] metric=focus-restore duration_us=8817 verified=0
+2026-08-09T16:38:38.798-04:00 NOTICE [metrics] metric=hid-to-down duration_us=11624
+2026-08-09T16:38:38.852-04:00 NOTICE [metrics] metric=tap-complete duration_us=117
+2026-08-09T16:38:38.883-04:00 WARNING [focus] Could not verify restore of the previously focused window. focusedWindow=0, mainWindow=0, raise=0, windowMain=0, windowFocused=0, sessionClick=true, refocusedWindow=0.
+2026-08-09T16:38:38.883-04:00 NOTICE [metrics] metric=focus-restore duration_us=4648 verified=0
+2026-08-09T16:38:39.281-04:00 NOTICE [metrics] metric=hid-to-down duration_us=13030
+2026-08-09T16:38:39.391-04:00 NOTICE [metrics] metric=tap-complete duration_us=23547
+2026-08-09T16:38:39.419-04:00 WARNING [focus] Could not verify restore of the previously focused window. focusedWindow=0, mainWindow=0, raise=0, windowMain=0, windowFocused=0, sessionClick=true, refocusedWindow=0.
+2026-08-09T16:38:39.419-04:00 NOTICE [metrics] metric=focus-restore duration_us=5746 verified=0
+2026-08-09T16:38:39.743-04:00 NOTICE [metrics] metric=hid-to-down duration_us=10790
+2026-08-09T16:38:39.839-04:00 NOTICE [metrics] metric=tap-complete duration_us=23764
+2026-08-09T16:38:39.875-04:00 WARNING [focus] Could not verify restore of the previously focused window. focusedWindow=0, mainWindow=0, raise=0, windowMain=0, windowFocused=0, sessionClick=true, refocusedWindow=0.
+2026-08-09T16:38:39.875-04:00 NOTICE [metrics] metric=focus-restore duration_us=9325 verified=0
+2026-08-09T16:38:40.294-04:00 NOTICE [metrics] metric=hid-to-down duration_us=13281
+2026-08-09T16:38:40.332-04:00 NOTICE [metrics] metric=tap-complete duration_us=20295
+2026-08-09T16:38:40.359-04:00 WARNING [focus] Could not verify restore of the previously focused window. focusedWindow=0, mainWindow=0, raise=0, windowMain=0, windowFocused=0, sessionClick=true, refocusedWindow=0.
+2026-08-09T16:38:40.359-04:00 NOTICE [metrics] metric=focus-restore duration_us=2469 verified=0
+2026-08-09T16:38:40.775-04:00 NOTICE [metrics] metric=hid-to-down duration_us=13517
+2026-08-09T16:38:40.835-04:00 NOTICE [metrics] metric=tap-complete duration_us=25027
+2026-08-09T16:38:40.865-04:00 WARNING [focus] Could not verify restore of the previously focused window. focusedWindow=0, mainWindow=0, raise=0, windowMain=0, windowFocused=0, sessionClick=true, refocusedWindow=0.
+2026-08-09T16:38:40.865-04:00 NOTICE [metrics] metric=focus-restore duration_us=4834 verified=0
+2026-08-09T16:38:41.288-04:00 NOTICE [metrics] metric=hid-to-down duration_us=12843
+2026-08-09T16:38:41.366-04:00 NOTICE [metrics] metric=tap-complete duration_us=24093
+2026-08-09T16:38:41.397-04:00 WARNING [focus] Could not verify restore of the previously focused window. focusedWindow=0, mainWindow=0, raise=0, windowMain=0, windowFocused=0, sessionClick=true, refocusedWindow=0.
+2026-08-09T16:38:41.397-04:00 NOTICE [metrics] metric=focus-restore duration_us=6652 verified=0
+2026-08-09T16:38:41.986-04:00 NOTICE [metrics] metric=hid-to-down duration_us=13392
+2026-08-09T16:38:42.046-04:00 NOTICE [metrics] metric=tap-complete duration_us=24792
+2026-08-09T16:38:42.081-04:00 WARNING [focus] Could not verify restore of the previously focused window. focusedWindow=0, mainWindow=0, raise=0, windowMain=0, windowFocused=0, sessionClick=true, refocusedWindow=0.
+2026-08-09T16:38:42.081-04:00 NOTICE [metrics] metric=focus-restore duration_us=11665 verified=0
+2026-08-09T16:38:42.583-04:00 NOTICE [metrics] metric=hid-to-down duration_us=11885
+2026-08-09T16:38:42.623-04:00 NOTICE [metrics] metric=tap-complete duration_us=20627
+2026-08-09T16:38:42.651-04:00 WARNING [focus] Could not verify restore of the previously focused window. focusedWindow=0, mainWindow=0, raise=0, windowMain=0, windowFocused=0, sessionClick=true, refocusedWindow=0.
+2026-08-09T16:38:42.651-04:00 NOTICE [metrics] metric=focus-restore duration_us=7806 verified=0
+2026-08-09T16:38:43.080-04:00 NOTICE [metrics] metric=hid-to-down duration_us=13048
+2026-08-09T16:38:43.140-04:00 NOTICE [metrics] metric=tap-complete duration_us=22230
+2026-08-09T16:38:43.171-04:00 WARNING [focus] Could not verify restore of the previously focused window. focusedWindow=0, mainWindow=0, raise=0, windowMain=0, windowFocused=0, sessionClick=true, refocusedWindow=0.
+2026-08-09T16:38:43.171-04:00 NOTICE [metrics] metric=focus-restore duration_us=5916 verified=0
+2026-08-09T16:38:43.730-04:00 NOTICE [metrics] metric=hid-to-down duration_us=13786
+2026-08-09T16:38:43.821-04:00 NOTICE [metrics] metric=tap-complete duration_us=24777
+2026-08-09T16:38:43.855-04:00 WARNING [focus] Could not verify restore of the previously focused window. focusedWindow=0, mainWindow=0, raise=0, windowMain=0, windowFocused=0, sessionClick=true, refocusedWindow=0.
+2026-08-09T16:38:43.855-04:00 NOTICE [metrics] metric=focus-restore duration_us=10783 verified=0
+2026-08-09T16:38:44.505-04:00 NOTICE [metrics] metric=hid-to-down duration_us=11340
+2026-08-09T16:38:44.583-04:00 NOTICE [metrics] metric=tap-complete duration_us=21704
+2026-08-09T16:38:44.612-04:00 WARNING [focus] Could not verify restore of the previously focused window. focusedWindow=0, mainWindow=0, raise=0, windowMain=0, windowFocused=0, sessionClick=true, refocusedWindow=0.
+2026-08-09T16:38:44.612-04:00 NOTICE [metrics] metric=focus-restore duration_us=3437 verified=0
+2026-08-09T16:38:45.006-04:00 NOTICE [metrics] metric=hid-to-down duration_us=12965
+2026-08-09T16:38:45.096-04:00 NOTICE [metrics] metric=tap-complete duration_us=21776
+2026-08-09T16:38:45.136-04:00 WARNING [focus] Could not verify restore of the previously focused window. focusedWindow=0, mainWindow=0, raise=0, windowMain=0, windowFocused=0, sessionClick=true, refocusedWindow=0.
+2026-08-09T16:38:45.136-04:00 NOTICE [metrics] metric=focus-restore duration_us=1482 verified=0
+2026-08-09T16:38:45.601-04:00 NOTICE [metrics] metric=hid-to-down duration_us=11238
+2026-08-09T16:38:45.696-04:00 NOTICE [metrics] metric=tap-complete duration_us=24736
+2026-08-09T16:38:45.729-04:00 WARNING [focus] Could not verify restore of the previously focused window. focusedWindow=0, mainWindow=0, raise=0, windowMain=0, windowFocused=0, sessionClick=true, refocusedWindow=0.
+2026-08-09T16:38:45.729-04:00 NOTICE [metrics] metric=focus-restore duration_us=8847 verified=0
+2026-08-09T16:38:46.367-04:00 NOTICE [metrics] metric=hid-to-down duration_us=13964
+2026-08-09T16:38:46.441-04:00 NOTICE [metrics] metric=tap-complete duration_us=22562
+2026-08-09T16:38:46.469-04:00 WARNING [focus] Could not verify restore of the previously focused window. focusedWindow=0, mainWindow=0, raise=0, windowMain=0, windowFocused=0, sessionClick=true, refocusedWindow=0.
+2026-08-09T16:38:46.470-04:00 NOTICE [metrics] metric=focus-restore duration_us=9715 verified=0
+2026-08-09T16:38:47.013-04:00 NOTICE [metrics] metric=hid-to-down duration_us=13363
+2026-08-09T16:38:47.663-04:00 NOTICE [metrics] metric=tap-complete duration_us=116
+2026-08-09T16:38:47.696-04:00 WARNING [focus] Could not verify restore of the previously focused window. focusedWindow=0, mainWindow=0, raise=0, windowMain=0, windowFocused=0, sessionClick=true, refocusedWindow=0.
+2026-08-09T16:38:47.696-04:00 NOTICE [metrics] metric=focus-restore duration_us=11513 verified=0
+2026-08-09T16:38:48.076-04:00 NOTICE [metrics] metric=hid-to-down duration_us=12921
+2026-08-09T16:38:48.329-04:00 NOTICE [metrics] metric=tap-complete duration_us=59
+2026-08-09T16:38:48.361-04:00 WARNING [focus] Could not verify restore of the previously focused window. focusedWindow=0, mainWindow=0, raise=0, windowMain=0, windowFocused=0, sessionClick=true, refocusedWindow=0.
+2026-08-09T16:38:48.361-04:00 NOTICE [metrics] metric=focus-restore duration_us=10620 verified=0
+2026-08-09T16:38:48.789-04:00 NOTICE [metrics] metric=hid-to-down duration_us=12825
+2026-08-09T16:38:49.008-04:00 NOTICE [metrics] metric=tap-complete duration_us=102
+2026-08-09T16:38:49.051-04:00 WARNING [focus] Could not verify restore of the previously focused window. focusedWindow=0, mainWindow=0, raise=0, windowMain=0, windowFocused=0, sessionClick=true, refocusedWindow=0.
+2026-08-09T16:38:49.051-04:00 NOTICE [metrics] metric=focus-restore duration_us=20926 verified=0
+2026-08-09T16:38:49.271-04:00 NOTICE [metrics] metric=hid-to-down duration_us=13128
+2026-08-09T16:38:49.505-04:00 NOTICE [metrics] metric=tap-complete duration_us=47
+2026-08-09T16:38:49.532-04:00 WARNING [focus] Could not verify restore of the previously focused window. focusedWindow=0, mainWindow=0, raise=0, windowMain=0, windowFocused=0, sessionClick=true, refocusedWindow=0.
+2026-08-09T16:38:49.533-04:00 NOTICE [metrics] metric=focus-restore duration_us=5332 verified=0
+2026-08-09T16:38:49.866-04:00 NOTICE [metrics] metric=hid-to-down duration_us=11174
+2026-08-09T16:38:50.086-04:00 NOTICE [metrics] metric=tap-complete duration_us=58
+2026-08-09T16:38:50.112-04:00 WARNING [focus] Could not verify restore of the previously focused window. focusedWindow=0, mainWindow=0, raise=0, windowMain=0, windowFocused=0, sessionClick=true, refocusedWindow=0.
+2026-08-09T16:38:50.112-04:00 NOTICE [metrics] metric=focus-restore duration_us=7629 verified=0
+2026-08-09T16:38:50.430-04:00 NOTICE [metrics] metric=hid-to-down duration_us=12070
+2026-08-09T16:38:50.617-04:00 NOTICE [metrics] metric=tap-complete duration_us=115
+2026-08-09T16:38:50.647-04:00 WARNING [focus] Could not verify restore of the previously focused window. focusedWindow=0, mainWindow=0, raise=0, windowMain=0, windowFocused=0, sessionClick=true, refocusedWindow=0.
+2026-08-09T16:38:50.647-04:00 NOTICE [metrics] metric=focus-restore duration_us=9860 verified=0
+2026-08-09T16:38:50.994-04:00 NOTICE [metrics] metric=hid-to-down duration_us=10860
+2026-08-09T16:38:51.198-04:00 NOTICE [metrics] metric=tap-complete duration_us=74
+2026-08-09T16:38:51.238-04:00 WARNING [focus] Could not verify restore of the previously focused window. focusedWindow=0, mainWindow=0, raise=0, windowMain=0, windowFocused=0, sessionClick=true, refocusedWindow=0.
+2026-08-09T16:38:51.238-04:00 NOTICE [metrics] metric=focus-restore duration_us=17287 verified=0
+2026-08-09T16:38:51.541-04:00 NOTICE [metrics] metric=hid-to-down duration_us=11833
+2026-08-09T16:38:51.747-04:00 NOTICE [metrics] metric=tap-complete duration_us=52
+2026-08-09T16:38:51.779-04:00 WARNING [focus] Could not verify restore of the previously focused window. focusedWindow=0, mainWindow=0, raise=0, windowMain=0, windowFocused=0, sessionClick=true, refocusedWindow=0.
+2026-08-09T16:38:51.779-04:00 NOTICE [metrics] metric=focus-restore duration_us=10299 verified=0
+2026-08-09T16:38:52.122-04:00 NOTICE [metrics] metric=hid-to-down duration_us=11156
+2026-08-09T16:38:52.199-04:00 NOTICE [metrics] metric=tap-complete duration_us=21101
+2026-08-09T16:38:52.235-04:00 WARNING [focus] Could not verify restore of the previously focused window. focusedWindow=0, mainWindow=0, raise=0, windowMain=0, windowFocused=0, sessionClick=true, refocusedWindow=0.
+2026-08-09T16:38:52.235-04:00 NOTICE [metrics] metric=focus-restore duration_us=16410 verified=0
+2026-08-09T16:38:52.505-04:00 NOTICE [metrics] metric=hid-to-down duration_us=13056
+2026-08-09T16:38:52.596-04:00 NOTICE [metrics] metric=tap-complete duration_us=20589
+2026-08-09T16:38:52.620-04:00 WARNING [focus] Could not verify restore of the previously focused window. focusedWindow=0, mainWindow=0, raise=0, windowMain=0, windowFocused=0, sessionClick=true, refocusedWindow=0.
+2026-08-09T16:38:52.620-04:00 NOTICE [metrics] metric=focus-restore duration_us=4158 verified=0
+2026-08-09T16:38:52.886-04:00 NOTICE [metrics] metric=hid-to-down duration_us=11331
+2026-08-09T16:38:52.930-04:00 NOTICE [metrics] metric=tap-complete duration_us=23332
+2026-08-09T16:38:52.951-04:00 WARNING [focus] Could not verify restore of the previously focused window. focusedWindow=0, mainWindow=0, raise=0, windowMain=0, windowFocused=0, sessionClick=true, refocusedWindow=0.
+2026-08-09T16:38:52.951-04:00 NOTICE [metrics] metric=focus-restore duration_us=2392 verified=0
+2026-08-09T16:38:53.285-04:00 NOTICE [metrics] metric=hid-to-down duration_us=12814
+2026-08-09T16:38:53.487-04:00 NOTICE [metrics] metric=tap-complete duration_us=51
+2026-08-09T16:38:53.516-04:00 WARNING [focus] Could not verify restore of the previously focused window. focusedWindow=0, mainWindow=0, raise=0, windowMain=0, windowFocused=0, sessionClick=true, refocusedWindow=0.
+2026-08-09T16:38:53.516-04:00 NOTICE [metrics] metric=focus-restore duration_us=7270 verified=0
+2026-08-09T16:38:53.848-04:00 NOTICE [metrics] metric=hid-to-down duration_us=11353
+2026-08-09T16:38:54.052-04:00 NOTICE [metrics] metric=tap-complete duration_us=62
+2026-08-09T16:38:54.083-04:00 WARNING [focus] Could not verify restore of the previously focused window. focusedWindow=0, mainWindow=0, raise=0, windowMain=0, windowFocused=0, sessionClick=true, refocusedWindow=0.
+2026-08-09T16:38:54.083-04:00 NOTICE [metrics] metric=focus-restore duration_us=7897 verified=0
+2026-08-09T16:38:54.361-04:00 NOTICE [metrics] metric=hid-to-down duration_us=11289
+2026-08-09T16:38:54.584-04:00 NOTICE [metrics] metric=tap-complete duration_us=66
+2026-08-09T16:38:54.611-04:00 WARNING [focus] Could not verify restore of the previously focused window. focusedWindow=0, mainWindow=0, raise=0, windowMain=0, windowFocused=0, sessionClick=true, refocusedWindow=0.
+2026-08-09T16:38:54.611-04:00 NOTICE [metrics] metric=focus-restore duration_us=1684 verified=0
+2026-08-09T16:38:54.895-04:00 NOTICE [metrics] metric=hid-to-down duration_us=11941
+2026-08-09T16:38:58.532-04:00 NOTICE [metrics] metric=tap-complete duration_us=113
+2026-08-09T16:38:58.563-04:00 WARNING [focus] Could not verify restore of the previously focused window. focusedWindow=0, mainWindow=0, raise=0, windowMain=0, windowFocused=0, sessionClick=true, refocusedWindow=0.
+2026-08-09T16:38:58.563-04:00 NOTICE [metrics] metric=focus-restore duration_us=9263 verified=0
+2026-08-09T16:38:58.828-04:00 NOTICE [metrics] metric=hid-to-down duration_us=13057
+2026-08-09T16:38:58.907-04:00 NOTICE [metrics] metric=tap-complete duration_us=25094
+2026-08-09T16:38:58.938-04:00 WARNING [focus] Could not verify restore of the previously focused window. focusedWindow=0, mainWindow=0, raise=0, windowMain=0, windowFocused=0, sessionClick=true, refocusedWindow=0.
+2026-08-09T16:38:58.938-04:00 NOTICE [metrics] metric=focus-restore duration_us=7298 verified=0
+2026-08-09T16:38:59.090-04:00 NOTICE [metrics] metric=hid-to-down duration_us=11249
+2026-08-09T16:38:59.155-04:00 NOTICE [metrics] metric=tap-complete duration_us=24602
+2026-08-09T16:38:59.185-04:00 WARNING [focus] Could not verify restore of the previously focused window. focusedWindow=0, mainWindow=0, raise=0, windowMain=0, windowFocused=0, sessionClick=true, refocusedWindow=0.
+2026-08-09T16:38:59.185-04:00 NOTICE [metrics] metric=focus-restore duration_us=7722 verified=0
+2026-08-09T16:38:59.390-04:00 NOTICE [metrics] metric=hid-to-down duration_us=11758
+2026-08-09T16:38:59.417-04:00 NOTICE [metrics] metric=tap-complete duration_us=22517
+2026-08-09T16:38:59.449-04:00 WARNING [focus] Could not verify restore of the previously focused window. focusedWindow=0, mainWindow=0, raise=0, windowMain=0, windowFocused=0, sessionClick=true, refocusedWindow=0.
+2026-08-09T16:38:59.449-04:00 NOTICE [metrics] metric=focus-restore duration_us=16236 verified=0
+2026-08-09T16:39:38.551-04:00 NOTICE [metrics] metric=hid-to-down duration_us=13385
+2026-08-09T16:39:38.626-04:00 NOTICE [metrics] metric=tap-complete duration_us=22737
+2026-08-09T16:39:38.655-04:00 WARNING [focus] Could not verify restore of the previously focused window. focusedWindow=0, mainWindow=0, raise=0, windowMain=0, windowFocused=0, sessionClick=true, refocusedWindow=0.
+2026-08-09T16:39:38.655-04:00 NOTICE [metrics] metric=focus-restore duration_us=7577 verified=0
+2026-08-09T16:39:40.128-04:00 NOTICE [metrics] metric=hid-to-down duration_us=13128
+2026-08-09T16:39:40.188-04:00 NOTICE [metrics] metric=tap-complete duration_us=24401
+2026-08-09T16:39:40.216-04:00 WARNING [focus] Could not verify restore of the previously focused window. focusedWindow=0, mainWindow=0, raise=0, windowMain=0, windowFocused=0, sessionClick=true, refocusedWindow=0.
+2026-08-09T16:39:40.216-04:00 NOTICE [metrics] metric=focus-restore duration_us=3178 verified=0
+2026-08-09T16:39:40.473-04:00 NOTICE [metrics] metric=hid-to-down duration_us=11331
+2026-08-09T16:39:40.520-04:00 NOTICE [metrics] metric=tap-complete duration_us=24509
+2026-08-09T16:39:40.550-04:00 WARNING [focus] Could not verify restore of the previously focused window. focusedWindow=0, mainWindow=0, raise=0, windowMain=0, windowFocused=0, sessionClick=true, refocusedWindow=0.
+2026-08-09T16:39:40.550-04:00 NOTICE [metrics] metric=focus-restore duration_us=13977 verified=0
+2026-08-09T16:39:40.805-04:00 NOTICE [metrics] metric=hid-to-down duration_us=11497
+2026-08-09T16:39:40.864-04:00 NOTICE [metrics] metric=tap-complete duration_us=20174
+2026-08-09T16:39:40.887-04:00 WARNING [focus] Could not verify restore of the previously focused window. focusedWindow=0, mainWindow=0, raise=0, windowMain=0, windowFocused=0, sessionClick=true, refocusedWindow=0.
+2026-08-09T16:39:40.887-04:00 NOTICE [metrics] metric=focus-restore duration_us=3546 verified=0
+2026-08-09T16:39:41.452-04:00 NOTICE [metrics] metric=hid-to-down duration_us=11314
+2026-08-09T16:39:41.517-04:00 NOTICE [metrics] metric=tap-complete duration_us=24562
+2026-08-09T16:39:41.549-04:00 WARNING [focus] Could not verify restore of the previously focused window. focusedWindow=0, mainWindow=0, raise=0, windowMain=0, windowFocused=0, sessionClick=true, refocusedWindow=0.
+2026-08-09T16:39:41.549-04:00 NOTICE [metrics] metric=focus-restore duration_us=9762 verified=0
+2026-08-09T16:39:42.000-04:00 NOTICE [metrics] metric=hid-to-down duration_us=10887
+2026-08-09T16:39:42.063-04:00 NOTICE [metrics] metric=tap-complete duration_us=24408
+2026-08-09T16:39:42.099-04:00 WARNING [focus] Could not verify restore of the previously focused window. focusedWindow=0, mainWindow=0, raise=0, windowMain=0, windowFocused=0, sessionClick=true, refocusedWindow=0.
+2026-08-09T16:39:42.099-04:00 NOTICE [metrics] metric=focus-restore duration_us=8399 verified=0
+2026-08-09T16:39:42.439-04:00 NOTICE [metrics] metric=hid-to-down duration_us=17622
+2026-08-09T16:39:42.476-04:00 NOTICE [metrics] metric=tap-complete duration_us=21889
+2026-08-09T16:39:42.506-04:00 WARNING [focus] Could not verify restore of the previously focused window. focusedWindow=0, mainWindow=0, raise=0, windowMain=0, windowFocused=0, sessionClick=true, refocusedWindow=0.
+2026-08-09T16:39:42.506-04:00 NOTICE [metrics] metric=focus-restore duration_us=9535 verified=0
+2026-08-09T16:39:42.848-04:00 NOTICE [metrics] metric=hid-to-down duration_us=11180
+2026-08-09T16:39:42.890-04:00 NOTICE [metrics] metric=tap-complete duration_us=22346
+2026-08-09T16:39:42.919-04:00 WARNING [focus] Could not verify restore of the previously focused window. focusedWindow=0, mainWindow=0, raise=0, windowMain=0, windowFocused=0, sessionClick=true, refocusedWindow=0.
+2026-08-09T16:39:42.919-04:00 NOTICE [metrics] metric=focus-restore duration_us=5202 verified=0
+2026-08-09T16:39:43.178-04:00 NOTICE [metrics] metric=hid-to-down duration_us=11404
+2026-08-09T16:39:43.223-04:00 NOTICE [metrics] metric=tap-complete duration_us=23694
+2026-08-09T16:39:43.247-04:00 WARNING [focus] Could not verify restore of the previously focused window. focusedWindow=0, mainWindow=0, raise=0, windowMain=0, windowFocused=0, sessionClick=true, refocusedWindow=0.
+2026-08-09T16:39:43.247-04:00 NOTICE [metrics] metric=focus-restore duration_us=2227 verified=0
+2026-08-09T16:39:43.810-04:00 NOTICE [metrics] metric=hid-to-down duration_us=12509

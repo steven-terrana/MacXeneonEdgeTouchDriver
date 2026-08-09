@@ -17,7 +17,9 @@ public enum HIDDeviceMonitorError: Error, LocalizedError, Equatable {
 
 /// Monitors the Xeneon Edge HID device and emits parsed single-touch events.
 public final class HIDDeviceMonitor {
-    /// Receives parsed touch events on the configured event queue.
+    /// Receives parsed touch events synchronously on the HID callback thread.
+    /// The receiver is responsible for dispatching to its own queue and may
+    /// coalesce superseded move events.
     public typealias TouchEventHandler = (TouchEvent) -> Void
 
     /// Receives device match events on the configured event queue.
@@ -166,9 +168,9 @@ public final class HIDDeviceMonitor {
             return
         }
 
-        eventQueue.async { [touchEventHandler] in
-            touchEventHandler(event)
-        }
+        // Called synchronously on the HID callback thread so the receiver can
+        // coalesce superseded move events before dispatching to its queue.
+        touchEventHandler(event)
     }
 
     private func registerCurrentlyMatchedDevices() {

@@ -92,6 +92,40 @@ All fields are optional. Missing or malformed config falls back to defaults and 
 
 `gesture.multiTouchEnabled` is always forced to `false` as the hardware only exposes single touch information, if this ever changes we will look to see how to support multi-touch gestures.
 
+## Benchmarking
+
+Two layers of performance measurement are available.
+
+Deterministic benchmarks drive the production pipeline with fake input/cursor
+sinks, so results reflect driver code cost only and are comparable across
+commits:
+
+```sh
+swift run -c release Benchmarks            # all scenarios
+swift run -c release Benchmarks drag       # full-pipeline drag throughput
+swift run -c release Benchmarks backlog    # move staleness under a slow sink
+swift run -c release Benchmarks parser     # raw HID report parsing cost
+```
+
+To benchmark against real recorded touches, capture a HID trace and replay it
+(`--paced` preserves the recorded inter-report timing):
+
+```sh
+swift run HIDDump --record trace.jsonl     # then tap/drag on the panel
+swift run -c release Benchmarks replay trace.jsonl [--paced]
+```
+
+Live driver latency is measured through Unified Logging metrics that the
+driver emits under the `metrics` category (`hid-to-down`, `tap-complete`,
+`focus-restore`, `display-refresh`). With the driver installed and running:
+
+```sh
+./Scripts/benchmark.sh [duration-seconds]
+```
+
+then interact with the touchscreen. The script prints per-metric p50/p90/p99
+percentiles when the capture window ends.
+
 ## Known Caveats
 
 - If the physical mouse is moved during a touch gesture, the cursor will return to the position captured when the touch began.

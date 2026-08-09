@@ -1,0 +1,20 @@
+# Live metrics after: Interactive ProcessType + userInteractive gesture queue QoS
+#                     + staged focus restore (fast path -> attr set -> full -> click)
+# date: 2026-08-09
+# capture: Scripts/benchmark.sh 90, same protocol as baseline
+# raw capture: after-qos-focusrestore-raw.log
+
+=== Metric summary ===
+focus-restore    n=38    p50=7.8ms p90=11.7ms p99=17.3ms max=20.9ms  verified=0/38
+hid-to-down      n=38    p50=12.8ms p90=13.5ms p99=17.5ms max=47.6ms
+tap-complete     n=38    p50=21.8ms p90=24.8ms p99=25.0ms max=25.1ms
+
+# vs baseline:
+# - hid-to-down p50: 48.0ms -> 12.8ms (-73%): Background ProcessType QoS theory
+#   CONFIRMED. Configured 10ms delay + ~3ms overhead is now the whole story.
+# - tap-complete p50: 118.9ms -> 21.8ms (-82%): same root cause (timers fired
+#   late under background QoS).
+# - focus-restore p50: 5.3 -> 7.8ms and verified 2/34 -> 0/38: fast path never
+#   hits; verification always fails. Restore may race the app activation from
+#   the synthetic click, or AXUIElement CFEqual comparison may be unreliable
+#   across copies. Needs stage-level diagnostics.

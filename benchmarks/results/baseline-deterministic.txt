@@ -1,0 +1,44 @@
+# Baseline (pre-optimization) deterministic benchmarks
+# date: 2026-08-09T10:56:25-04:00
+# commit: 13c0f34 (+ uncommitted instrumentation)
+# hardware: Apple M3 Pro, 12 cores, macOS 15.7.8
+
+### run 1
+== drag throughput (10000 moves, burst) ==
+  total=24.4ms events=10002 mean=2.44us/event throughput=410566 events/s
+  move staleness (enqueue->processed): n=9998 p50=15968.2us p90=22414.0us p99=23838.3us max=23999.0us
+  posted: down=1 drags=10000 up=1
+
+== backlog staleness (500 moves, 2000us sink delay) ==
+  move staleness (enqueue->processed): n=500 p50=639876.3us p90=1144661.3us p99=1257929.9us max=1270661.4us
+  final point ok: true (moves processed: 500/500)
+
+== parser throughput (1000000 reports) ==
+  total=39.2ms mean=39ns/report events=1000000
+
+### run 2
+== drag throughput (10000 moves, burst) ==
+  total=32.5ms events=10002 mean=3.25us/event throughput=307831 events/s
+  move staleness (enqueue->processed): n=9999 p50=21873.6us p90=30528.2us p99=32063.1us max=32225.7us
+  posted: down=1 drags=10000 up=1
+
+== backlog staleness (500 moves, 2000us sink delay) ==
+  move staleness (enqueue->processed): n=500 p50=640123.2us p90=1148929.1us p99=1263337.2us max=1275770.6us
+  final point ok: true (moves processed: 500/500)
+
+== parser throughput (1000000 reports) ==
+  total=44.4ms mean=44ns/report events=1000000
+
+### run 3
+== drag throughput (10000 moves, burst) ==
+  total=30.9ms events=10002 mean=3.09us/event throughput=323702 events/s
+  move staleness (enqueue->processed): n=10000 p50=21405.0us p90=28787.2us p99=30220.8us max=30382.2us
+  posted: down=1 drags=10000 up=1
+
+== backlog staleness (500 moves, 2000us sink delay) ==
+  move staleness (enqueue->processed): n=500 p50=629081.4us p90=1132540.3us p99=1244622.2us max=1257189.0us
+  final point ok: true (moves processed: 500/500)
+
+== parser throughput (1000000 reports) ==
+  total=36.3ms mean=36ns/report events=1000000
+

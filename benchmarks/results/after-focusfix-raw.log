@@ -1,0 +1,173 @@
+2026-08-09T16:56:54.132-04:00 NOTICE [metrics] metric=hid-to-down duration_us=19683
+2026-08-09T16:56:54.198-04:00 NOTICE [metrics] metric=tap-complete duration_us=20423
+2026-08-09T16:56:54.659-04:00 NOTICE [metrics] metric=hid-to-down duration_us=49226
+2026-08-09T16:56:54.698-04:00 NOTICE [metrics] metric=tap-complete duration_us=23635
+2026-08-09T16:56:54.711-04:00 NOTICE [metrics] metric=focus-restore duration_us=365 verified=1 stage=fast-path
+2026-08-09T16:56:55.202-04:00 NOTICE [metrics] metric=hid-to-down duration_us=12201
+2026-08-09T16:56:55.265-04:00 NOTICE [metrics] metric=tap-complete duration_us=24301
+2026-08-09T16:56:55.283-04:00 NOTICE [metrics] metric=focus-restore duration_us=507 verified=1 stage=fast-path
+2026-08-09T16:56:55.733-04:00 NOTICE [metrics] metric=hid-to-down duration_us=11223
+2026-08-09T16:56:55.792-04:00 NOTICE [metrics] metric=tap-complete duration_us=21386
+2026-08-09T16:56:55.805-04:00 NOTICE [metrics] metric=focus-restore duration_us=414 verified=1 stage=fast-path
+2026-08-09T16:56:56.167-04:00 NOTICE [metrics] metric=hid-to-down duration_us=13356
+2026-08-09T16:56:56.242-04:00 NOTICE [metrics] metric=tap-complete duration_us=23454
+2026-08-09T16:56:56.262-04:00 NOTICE [metrics] metric=focus-restore duration_us=485 verified=1 stage=fast-path
+2026-08-09T16:56:56.680-04:00 NOTICE [metrics] metric=hid-to-down duration_us=12277
+2026-08-09T16:56:56.723-04:00 NOTICE [metrics] metric=tap-complete duration_us=23556
+2026-08-09T16:56:56.740-04:00 NOTICE [metrics] metric=focus-restore duration_us=549 verified=1 stage=fast-path
+2026-08-09T16:56:57.144-04:00 NOTICE [metrics] metric=hid-to-down duration_us=12098
+2026-08-09T16:56:57.185-04:00 NOTICE [metrics] metric=tap-complete duration_us=20482
+2026-08-09T16:56:57.198-04:00 NOTICE [metrics] metric=focus-restore duration_us=538 verified=1 stage=fast-path
+2026-08-09T16:56:57.940-04:00 NOTICE [metrics] metric=hid-to-down duration_us=11881
+2026-08-09T16:56:58.000-04:00 NOTICE [metrics] metric=tap-complete duration_us=23591
+2026-08-09T16:56:58.013-04:00 NOTICE [metrics] metric=focus-restore duration_us=530 verified=1 stage=fast-path
+2026-08-09T16:56:58.322-04:00 NOTICE [metrics] metric=hid-to-down duration_us=12842
+2026-08-09T16:56:58.365-04:00 NOTICE [metrics] metric=tap-complete duration_us=22312
+2026-08-09T16:56:58.376-04:00 NOTICE [metrics] metric=focus-restore duration_us=373 verified=1 stage=fast-path
+2026-08-09T16:56:58.834-04:00 NOTICE [metrics] metric=hid-to-down duration_us=11175
+2026-08-09T16:56:58.894-04:00 NOTICE [metrics] metric=tap-complete duration_us=21337
+2026-08-09T16:56:58.907-04:00 NOTICE [metrics] metric=focus-restore duration_us=513 verified=1 stage=fast-path
+2026-08-09T16:56:59.402-04:00 NOTICE [metrics] metric=hid-to-down duration_us=13665
+2026-08-09T16:56:59.458-04:00 NOTICE [metrics] metric=tap-complete duration_us=20910
+2026-08-09T16:56:59.470-04:00 NOTICE [metrics] metric=focus-restore duration_us=456 verified=1 stage=fast-path
+2026-08-09T16:56:59.799-04:00 NOTICE [metrics] metric=hid-to-down duration_us=11973
+2026-08-09T16:56:59.858-04:00 NOTICE [metrics] metric=tap-complete duration_us=20926
+2026-08-09T16:56:59.872-04:00 NOTICE [metrics] metric=focus-restore duration_us=791 verified=1 stage=fast-path
+2026-08-09T16:57:00.514-04:00 NOTICE [metrics] metric=hid-to-down duration_us=13650
+2026-08-09T16:57:00.573-04:00 NOTICE [metrics] metric=tap-complete duration_us=23585
+2026-08-09T16:57:00.589-04:00 NOTICE [metrics] metric=focus-restore duration_us=569 verified=1 stage=fast-path
+2026-08-09T16:57:00.878-04:00 NOTICE [metrics] metric=hid-to-down duration_us=13418
+2026-08-09T16:57:00.937-04:00 NOTICE [metrics] metric=tap-complete duration_us=22679
+2026-08-09T16:57:00.950-04:00 NOTICE [metrics] metric=focus-restore duration_us=431 verified=1 stage=fast-path
+2026-08-09T16:57:01.343-04:00 NOTICE [metrics] metric=hid-to-down duration_us=13627
+2026-08-09T16:57:01.402-04:00 NOTICE [metrics] metric=tap-complete duration_us=23449
+2026-08-09T16:57:01.419-04:00 NOTICE [metrics] metric=focus-restore duration_us=1543 verified=1 stage=fast-path
+2026-08-09T16:57:01.906-04:00 NOTICE [metrics] metric=hid-to-down duration_us=12972
+2026-08-09T16:57:01.966-04:00 NOTICE [metrics] metric=tap-complete duration_us=24130
+2026-08-09T16:57:01.982-04:00 NOTICE [metrics] metric=focus-restore duration_us=504 verified=1 stage=fast-path
+2026-08-09T16:57:02.519-04:00 NOTICE [metrics] metric=hid-to-down duration_us=11083
+2026-08-09T16:57:02.581-04:00 NOTICE [metrics] metric=tap-complete duration_us=24996
+2026-08-09T16:57:02.599-04:00 NOTICE [metrics] metric=focus-restore duration_us=770 verified=1 stage=fast-path
+2026-08-09T16:57:02.910-04:00 NOTICE [metrics] metric=hid-to-down duration_us=20849
+2026-08-09T16:57:02.946-04:00 NOTICE [metrics] metric=tap-complete duration_us=25100
+2026-08-09T16:57:02.966-04:00 NOTICE [metrics] metric=focus-restore duration_us=617 verified=1 stage=fast-path
+2026-08-09T16:57:03.617-04:00 NOTICE [metrics] metric=hid-to-down duration_us=13319
+2026-08-09T16:57:03.661-04:00 NOTICE [metrics] metric=tap-complete duration_us=24750
+2026-08-09T16:57:03.677-04:00 NOTICE [metrics] metric=focus-restore duration_us=1229 verified=1 stage=fast-path
+2026-08-09T16:57:04.015-04:00 NOTICE [metrics] metric=hid-to-down duration_us=13263
+2026-08-09T16:57:04.075-04:00 NOTICE [metrics] metric=tap-complete duration_us=24765
+2026-08-09T16:57:04.090-04:00 NOTICE [metrics] metric=focus-restore duration_us=440 verified=1 stage=fast-path
+2026-08-09T16:57:04.513-04:00 NOTICE [metrics] metric=hid-to-down duration_us=13408
+2026-08-09T16:57:04.589-04:00 NOTICE [metrics] metric=tap-complete duration_us=24654
+2026-08-09T16:57:04.605-04:00 NOTICE [metrics] metric=focus-restore duration_us=522 verified=1 stage=fast-path
+2026-08-09T16:57:04.942-04:00 NOTICE [metrics] metric=hid-to-down duration_us=11673
+2026-08-09T16:57:05.006-04:00 NOTICE [metrics] metric=tap-complete duration_us=24968
+2026-08-09T16:57:05.020-04:00 NOTICE [metrics] metric=focus-restore duration_us=540 verified=1 stage=fast-path
+2026-08-09T16:57:05.340-04:00 NOTICE [metrics] metric=hid-to-down duration_us=11773
+2026-08-09T16:57:05.382-04:00 NOTICE [metrics] metric=tap-complete duration_us=21042
+2026-08-09T16:57:05.396-04:00 NOTICE [metrics] metric=focus-restore duration_us=574 verified=1 stage=fast-path
+2026-08-09T16:57:05.724-04:00 NOTICE [metrics] metric=hid-to-down duration_us=13122
+2026-08-09T16:57:05.781-04:00 NOTICE [metrics] metric=tap-complete duration_us=21987
+2026-08-09T16:57:05.795-04:00 NOTICE [metrics] metric=focus-restore duration_us=571 verified=1 stage=fast-path
+2026-08-09T16:57:06.156-04:00 NOTICE [metrics] metric=hid-to-down duration_us=13275
+2026-08-09T16:57:06.198-04:00 NOTICE [metrics] metric=tap-complete duration_us=22646
+2026-08-09T16:57:06.213-04:00 NOTICE [metrics] metric=focus-restore duration_us=541 verified=1 stage=fast-path
+2026-08-09T16:57:06.852-04:00 NOTICE [metrics] metric=hid-to-down duration_us=13373
+2026-08-09T16:57:07.552-04:00 NOTICE [metrics] metric=tap-complete duration_us=88
+2026-08-09T16:57:07.567-04:00 NOTICE [metrics] metric=focus-restore duration_us=435 verified=1 stage=fast-path
+2026-08-09T16:57:08.046-04:00 NOTICE [metrics] metric=hid-to-down duration_us=13526
+2026-08-09T16:57:08.233-04:00 NOTICE [metrics] metric=tap-complete duration_us=73
+2026-08-09T16:57:08.247-04:00 NOTICE [metrics] metric=focus-restore duration_us=414 verified=1 stage=fast-path
+2026-08-09T16:57:08.544-04:00 NOTICE [metrics] metric=hid-to-down duration_us=13149
+2026-08-09T16:57:08.696-04:00 NOTICE [metrics] metric=tap-complete duration_us=71
+2026-08-09T16:57:08.711-04:00 NOTICE [metrics] metric=focus-restore duration_us=1747 verified=1 stage=fast-path
+2026-08-09T16:57:08.977-04:00 NOTICE [metrics] metric=hid-to-down duration_us=13478
+2026-08-09T16:57:09.146-04:00 NOTICE [metrics] metric=tap-complete duration_us=120
+2026-08-09T16:57:09.164-04:00 NOTICE [metrics] metric=focus-restore duration_us=1967 verified=1 stage=fast-path
+2026-08-09T16:57:09.457-04:00 NOTICE [metrics] metric=hid-to-down duration_us=12456
+2026-08-09T16:57:09.592-04:00 NOTICE [metrics] metric=tap-complete duration_us=56
+2026-08-09T16:57:09.604-04:00 NOTICE [metrics] metric=focus-restore duration_us=568 verified=1 stage=fast-path
+2026-08-09T16:57:09.923-04:00 NOTICE [metrics] metric=hid-to-down duration_us=16170
+2026-08-09T16:57:10.073-04:00 NOTICE [metrics] metric=tap-complete duration_us=57
+2026-08-09T16:57:10.085-04:00 NOTICE [metrics] metric=focus-restore duration_us=793 verified=1 stage=fast-path
+2026-08-09T16:57:10.402-04:00 NOTICE [metrics] metric=hid-to-down duration_us=12401
+2026-08-09T16:57:10.521-04:00 NOTICE [metrics] metric=tap-complete duration_us=94
+2026-08-09T16:57:10.533-04:00 NOTICE [metrics] metric=focus-restore duration_us=589 verified=1 stage=fast-path
+2026-08-09T16:57:10.867-04:00 NOTICE [metrics] metric=hid-to-down duration_us=13437
+2026-08-09T16:57:11.052-04:00 NOTICE [metrics] metric=tap-complete duration_us=51
+2026-08-09T16:57:11.066-04:00 NOTICE [metrics] metric=focus-restore duration_us=751 verified=1 stage=fast-path
+2026-08-09T16:57:11.381-04:00 NOTICE [metrics] metric=hid-to-down duration_us=12951
+2026-08-09T16:57:11.500-04:00 NOTICE [metrics] metric=tap-complete duration_us=80
+2026-08-09T16:57:11.512-04:00 NOTICE [metrics] metric=focus-restore duration_us=495 verified=1 stage=fast-path
+2026-08-09T16:57:11.844-04:00 NOTICE [metrics] metric=hid-to-down duration_us=11632
+2026-08-09T16:57:11.931-04:00 NOTICE [metrics] metric=tap-complete duration_us=77
+2026-08-09T16:57:11.948-04:00 NOTICE [metrics] metric=focus-restore duration_us=500 verified=1 stage=fast-path
+2026-08-09T16:57:12.275-04:00 NOTICE [metrics] metric=hid-to-down duration_us=11133
+2026-08-09T16:57:12.379-04:00 NOTICE [metrics] metric=tap-complete duration_us=67
+2026-08-09T16:57:12.393-04:00 NOTICE [metrics] metric=focus-restore duration_us=1343 verified=1 stage=fast-path
+2026-08-09T16:57:12.676-04:00 NOTICE [metrics] metric=hid-to-down duration_us=12407
+2026-08-09T16:57:13.476-04:00 NOTICE [metrics] metric=tap-complete duration_us=111
+2026-08-09T16:57:13.488-04:00 NOTICE [metrics] metric=focus-restore duration_us=994 verified=1 stage=fast-path
+2026-08-09T16:57:13.906-04:00 NOTICE [metrics] metric=hid-to-down duration_us=16025
+2026-08-09T16:57:14.569-04:00 NOTICE [metrics] metric=tap-complete duration_us=87
+2026-08-09T16:57:14.582-04:00 NOTICE [metrics] metric=focus-restore duration_us=523 verified=1 stage=fast-path
+2026-08-09T16:57:14.984-04:00 NOTICE [metrics] metric=hid-to-down duration_us=13242
+2026-08-09T16:57:15.749-04:00 NOTICE [metrics] metric=tap-complete duration_us=157
+2026-08-09T16:57:15.761-04:00 NOTICE [metrics] metric=focus-restore duration_us=1374 verified=1 stage=fast-path
+2026-08-09T16:57:16.340-04:00 NOTICE [metrics] metric=hid-to-down duration_us=10864
+2026-08-09T16:57:16.366-04:00 NOTICE [metrics] metric=tap-complete duration_us=20362
+2026-08-09T16:57:16.378-04:00 NOTICE [metrics] metric=focus-restore duration_us=396 verified=1 stage=fast-path
+2026-08-09T16:57:16.623-04:00 NOTICE [metrics] metric=hid-to-down duration_us=11080
+2026-08-09T16:57:16.665-04:00 NOTICE [metrics] metric=tap-complete duration_us=20362
+2026-08-09T16:57:16.678-04:00 NOTICE [metrics] metric=focus-restore duration_us=401 verified=1 stage=fast-path
+2026-08-09T16:57:16.874-04:00 NOTICE [metrics] metric=hid-to-down duration_us=13204
+2026-08-09T16:57:16.916-04:00 NOTICE [metrics] metric=tap-complete duration_us=22407
+2026-08-09T16:57:16.929-04:00 NOTICE [metrics] metric=focus-restore duration_us=479 verified=1 stage=fast-path
+2026-08-09T16:57:17.190-04:00 NOTICE [metrics] metric=hid-to-down duration_us=13207
+2026-08-09T16:57:17.215-04:00 NOTICE [metrics] metric=tap-complete duration_us=23257
+2026-08-09T16:57:17.226-04:00 NOTICE [metrics] metric=focus-restore duration_us=887 verified=1 stage=fast-path
+2026-08-09T16:57:17.421-04:00 NOTICE [metrics] metric=hid-to-down duration_us=12221
+2026-08-09T16:57:17.465-04:00 NOTICE [metrics] metric=tap-complete duration_us=24307
+2026-08-09T16:57:17.480-04:00 NOTICE [metrics] metric=focus-restore duration_us=453 verified=1 stage=fast-path
+2026-08-09T16:57:17.668-04:00 NOTICE [metrics] metric=hid-to-down duration_us=11849
+2026-08-09T16:57:17.708-04:00 NOTICE [metrics] metric=tap-complete duration_us=122
+2026-08-09T16:57:17.721-04:00 NOTICE [metrics] metric=focus-restore duration_us=1392 verified=1 stage=fast-path
+2026-08-09T16:57:17.918-04:00 NOTICE [metrics] metric=hid-to-down duration_us=11065
+2026-08-09T16:57:17.956-04:00 NOTICE [metrics] metric=tap-complete duration_us=125
+2026-08-09T16:57:17.970-04:00 NOTICE [metrics] metric=focus-restore duration_us=1274 verified=1 stage=fast-path
+2026-08-09T16:57:18.167-04:00 NOTICE [metrics] metric=hid-to-down duration_us=13127
+2026-08-09T16:57:18.192-04:00 NOTICE [metrics] metric=tap-complete duration_us=21353
+2026-08-09T16:57:18.204-04:00 NOTICE [metrics] metric=focus-restore duration_us=453 verified=1 stage=fast-path
+2026-08-09T16:57:18.416-04:00 NOTICE [metrics] metric=hid-to-down duration_us=11776
+2026-08-09T16:57:18.441-04:00 NOTICE [metrics] metric=tap-complete duration_us=20718
+2026-08-09T16:57:18.454-04:00 NOTICE [metrics] metric=focus-restore duration_us=603 verified=1 stage=fast-path
+2026-08-09T16:57:18.665-04:00 NOTICE [metrics] metric=hid-to-down duration_us=11180
+2026-08-09T16:57:18.708-04:00 NOTICE [metrics] metric=tap-complete duration_us=22950
+2026-08-09T16:57:18.722-04:00 NOTICE [metrics] metric=focus-restore duration_us=612 verified=1 stage=fast-path
+2026-08-09T16:57:19.015-04:00 NOTICE [metrics] metric=hid-to-down duration_us=13231
+2026-08-09T16:57:19.075-04:00 NOTICE [metrics] metric=tap-complete duration_us=23690
+2026-08-09T16:57:19.090-04:00 NOTICE [metrics] metric=focus-restore duration_us=564 verified=1 stage=fast-path
+2026-08-09T16:57:19.297-04:00 NOTICE [metrics] metric=hid-to-down duration_us=13544
+2026-08-09T16:57:19.316-04:00 NOTICE [metrics] metric=tap-complete duration_us=119
+2026-08-09T16:57:19.327-04:00 NOTICE [metrics] metric=focus-restore duration_us=504 verified=1 stage=fast-path
+2026-08-09T16:57:19.526-04:00 NOTICE [metrics] metric=hid-to-down duration_us=11523
+2026-08-09T16:57:19.556-04:00 NOTICE [metrics] metric=tap-complete duration_us=24891
+2026-08-09T16:57:19.570-04:00 NOTICE [metrics] metric=focus-restore duration_us=509 verified=1 stage=fast-path
+2026-08-09T16:57:20.144-04:00 NOTICE [metrics] metric=hid-to-down duration_us=13419
+2026-08-09T16:57:20.180-04:00 NOTICE [metrics] metric=tap-complete duration_us=62
+2026-08-09T16:57:20.196-04:00 NOTICE [metrics] metric=focus-restore duration_us=481 verified=1 stage=fast-path
+2026-08-09T16:57:20.390-04:00 NOTICE [metrics] metric=hid-to-down duration_us=10891
+2026-08-09T16:57:20.471-04:00 NOTICE [metrics] metric=tap-complete duration_us=25201
+2026-08-09T16:57:20.484-04:00 NOTICE [metrics] metric=focus-restore duration_us=531 verified=1 stage=fast-path
+2026-08-09T16:57:20.624-04:00 NOTICE [metrics] metric=hid-to-down duration_us=12204
+2026-08-09T16:57:20.665-04:00 NOTICE [metrics] metric=tap-complete duration_us=21243
+2026-08-09T16:57:20.678-04:00 NOTICE [metrics] metric=focus-restore duration_us=539 verified=1 stage=fast-path
+2026-08-09T16:57:20.874-04:00 NOTICE [metrics] metric=hid-to-down duration_us=13241
+2026-08-09T16:57:20.900-04:00 NOTICE [metrics] metric=tap-complete duration_us=23629
+2026-08-09T16:57:20.915-04:00 NOTICE [metrics] metric=focus-restore duration_us=725 verified=1 stage=fast-path
+2026-08-09T16:57:21.089-04:00 NOTICE [metrics] metric=hid-to-down duration_us=13588
+2026-08-09T16:57:21.117-04:00 NOTICE [metrics] metric=tap-complete duration_us=24466
+2026-08-09T16:57:21.131-04:00 NOTICE [metrics] metric=focus-restore duration_us=410 verified=1 stage=fast-path
+2026-08-09T16:57:21.421-04:00 NOTICE [metrics] metric=hid-to-down duration_us=13493
+2026-08-09T16:57:22.005-04:00 NOTICE [metrics] metric=tap-complete duration_us=48
+2026-08-09T16:57:22.018-04:00 NOTICE [metrics] metric=focus-restore duration_us=1131 verified=1 stage=fast-path

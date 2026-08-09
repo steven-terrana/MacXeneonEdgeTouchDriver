@@ -34,9 +34,20 @@ private final class HIDDumpApplication {
     private var reportRegistrations: [ReportRegistration] = []
     private var valueEventCount = 0
     private var rawReportCount = 0
+    private let traceHandle: FileHandle?
+    private let tracePath: String?
+    private var traceStart: DispatchTime?
 
-    init() {
+    init(tracePath: String?) {
         self.manager = IOHIDManagerCreate(kCFAllocatorDefault, IOOptionBits(kIOHIDOptionsTypeNone))
+        self.tracePath = tracePath
+
+        if let tracePath {
+            FileManager.default.createFile(atPath: tracePath, contents: nil)
+            self.traceHandle = FileHandle(forWritingAtPath: tracePath)
+        } else {
+            self.traceHandle = nil
+        }
     }
 
     func run() -> Int32 {
@@ -143,6 +154,8 @@ private final class HIDDumpApplication {
         let bytes = UnsafeBufferPointer(start: report, count: Int(reportLength))
         let hexBytes = bytes.map { String(format: "%02X", $0) }.joined(separator: " ")
 
+        writeTraceRecord(reportID: reportID, hexBytes: hexBytes)
+
         print(
             [
                 "raw #\(rawReportCount)",
@@ -175,11 +188,29 @@ private final class HIDDumpApplication {
         IOHIDDeviceGetProperty(device, key as CFString).map { "\($0)" }
     }
 
+    private func writeTraceRecord(reportID: UInt32, hexBytes: String) {
+        guard let traceHandle else {
+            return
+        }
+
+        let start = traceStart ?? DispatchTime.now()
+        traceStart = start
+        let elapsedUs = (DispatchTime.now().uptimeNanoseconds - start.uptimeNanoseconds) / 1_000
+
+        let line = "{\"elapsed_us\": \(elapsedUs), \"report_id\": \(reportID), \"bytes\": \"\(hexBytes)\"}\n"
+        if let data = line.data(using: .utf8) {
+            traceHandle.write(data)
+        }
+    }
+
     private func printHeader() {
         print("HIDDump")
         print("Target VID: \(hex(touchscreenVendorID))")
         print("Target PID: \(hex(touchscreenProductID))")
         print("Mode: shared/non-seize diagnostic")
+        if let tracePath {
+            print("Recording raw report trace to: \(tracePath)")
+        }
         print(String(repeating: "-", count: 88))
     }
 }
@@ -285,4 +316,18 @@ private func formatIOReturn(_ value: IOReturn) -> String {
     String(format: "0x%08X", UInt32(bitPattern: value))
 }
 
-exit(HIDDumpApplication().run())
+private func parseTracePath() -> String? {
+    let arguments = CommandLine.arguments
+    guard let flagIndex = arguments.firstIndex(of: "--record") else {
+        return nil
+    }
+
+    guard flagIndex + 1 < arguments.count else {
+        fputs("Usage: HIDDump [--record <trace.jsonl>]\n", stderr)
+        exit(EXIT_FAILURE)
+    }
+
+    return arguments[flagIndex + 1]
+}
+
+exit(HIDDumpApplication(tracePath: parseTracePath()).run())

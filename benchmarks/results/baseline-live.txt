@@ -1,0 +1,23 @@
+# Baseline (pre-optimization) live driver metrics
+# date: 2026-08-09
+# capture: Scripts/benchmark.sh 90 (tail of driver.log)
+# protocol: ~20 taps + ~10 drags with light app focused, then same with heavy app focused
+# driver: XeneonDev-signed build @ 16:08, config defaults (timing 10/20/10ms, debounce 50ms)
+# raw capture: baseline-live-raw.log
+
+=== Metric summary ===
+focus-restore    n=34    p50=5.3ms p90=10.8ms p99=12.5ms max=12.6ms  verified=2/34
+hid-to-down      n=35    p50=48.0ms p90=66.2ms p99=68.2ms max=79.7ms
+tap-complete     n=35    p50=118.9ms p90=119.8ms p99=120.6ms max=123.8ms
+
+# Key observations:
+# - hid-to-down p50 = 48ms vs configured warpToClickDelayMs = 10ms: ~38ms of
+#   unexplained latency between HID report arrival and mouse-down posting.
+# - tap-complete ~119ms with remarkably low variance (p50..p99 spread < 2ms):
+#   dominated by fixed sequencing/delays, not load. Note metric measures from
+#   HID up arrival through the scheduled up chain.
+# - focus-restore verified only 2/34: the ~8-call AX restore sequence + title
+#   bar click almost never verifiably restores focus; 5-13ms spent per tap on
+#   a path that usually fails its own verification.
+# - Session log also showed repeated "Received touch down while already
+#   tracking a single touch" warnings: state machine confusion on multi-contact.

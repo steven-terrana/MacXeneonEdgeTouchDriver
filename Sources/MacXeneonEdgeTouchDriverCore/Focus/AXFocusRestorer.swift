@@ -9,11 +9,15 @@ public final class AXFocusRestorer: FocusRestorer {
         let window: AXUIElement
     }
 
+    /// Cap for every AX call so an unresponsive app cannot stall the gesture queue.
+    private static let messagingTimeoutSeconds: Float = 0.15
+
     private let systemWideElement: AXUIElement
     private var capturedWindow: CapturedWindow?
 
     public init(systemWideElement: AXUIElement = AXUIElementCreateSystemWide()) {
         self.systemWideElement = systemWideElement
+        AXUIElementSetMessagingTimeout(systemWideElement, Self.messagingTimeoutSeconds)
     }
 
     public func captureFocusedWindow() {
@@ -29,6 +33,8 @@ public final class AXFocusRestorer: FocusRestorer {
             return
         }
 
+        AXUIElementSetMessagingTimeout(application, Self.messagingTimeoutSeconds)
+        AXUIElementSetMessagingTimeout(window, Self.messagingTimeoutSeconds)
         capturedWindow = CapturedWindow(application: application, window: window)
     }
 
@@ -37,30 +43,45 @@ public final class AXFocusRestorer: FocusRestorer {
             return
         }
         self.capturedWindow = nil
+        let restoreStart = DispatchTime.now()
+        var didVerifyRestore = false
+        var stage = "fast-path"
+        defer {
+            DriverMetrics.recordFocusRestore(
+                durationUs: DriverMetrics.microseconds(since: restoreStart),
+                verified: didVerifyRestore,
+                stage: stage
+            )
+        }
+
+        // Fast path: if focus never left the captured window (common when the
+        // tap landed on the Xeneon display without changing key window), or a
+        // single attribute set restores it, skip the expensive escalation.
+        if isWindowFocused(capturedWindow) {
+            didVerifyRestore = true
+            return
+        }
 
         // Do not use app-level AXFrontmost here; it raises sibling windows from the same application.
+        stage = "attr-set"
         let focusedWindowResult = AXUIElementSetAttributeValue(
             capturedWindow.application,
             kAXFocusedWindowAttribute as CFString,
             capturedWindow.window
         )
+        if isWindowFocused(capturedWindow) {
+            didVerifyRestore = true
+            return
+        }
+
+        // Escalation: full restore sequence for apps that ignore the simple set.
+        stage = "full-sequence"
         let mainWindowResult = AXUIElementSetAttributeValue(
             capturedWindow.application,
             kAXMainWindowAttribute as CFString,
             capturedWindow.window
         )
         let raiseResult = AXUIElementPerformAction(capturedWindow.window, kAXRaiseAction as CFString)
-        let sessionClickResult = clickCapturedWindowTitleBar(capturedWindow)
-        let refocusedWindowResult = AXUIElementSetAttributeValue(
-            capturedWindow.application,
-            kAXFocusedWindowAttribute as CFString,
-            capturedWindow.window
-        )
-        let remadeMainWindowResult = AXUIElementSetAttributeValue(
-            capturedWindow.application,
-            kAXMainWindowAttribute as CFString,
-            capturedWindow.window
-        )
         let mainResult = AXUIElementSetAttributeValue(
             capturedWindow.window,
             kAXMainAttribute as CFString,
@@ -71,12 +92,27 @@ public final class AXFocusRestorer: FocusRestorer {
             kAXFocusedAttribute as CFString,
             kCFBooleanTrue
         )
+        if isWindowFocused(capturedWindow) {
+            didVerifyRestore = true
+            return
+        }
 
-        guard isWindowFocused(capturedWindow) else {
+        // Last resort: synthetic title-bar click. Kept last because it can hit
+        // toolbar controls in apps with unified title/toolbar areas.
+        stage = "title-click"
+        let sessionClickResult = clickCapturedWindowTitleBar(capturedWindow)
+        let refocusedWindowResult = AXUIElementSetAttributeValue(
+            capturedWindow.application,
+            kAXFocusedWindowAttribute as CFString,
+            capturedWindow.window
+        )
+
+        didVerifyRestore = isWindowFocused(capturedWindow)
+        guard didVerifyRestore else {
             DriverLoggers.log(
                 .warning,
                 category: .focus,
-                "Could not verify restore of the previously focused window. focusedWindow=\(focusedWindowResult.rawValue), mainWindow=\(mainWindowResult.rawValue), raise=\(raiseResult.rawValue), sessionClick=\(sessionClickResult), refocusedWindow=\(refocusedWindowResult.rawValue), remadeMainWindow=\(remadeMainWindowResult.rawValue), windowMain=\(mainResult.rawValue), windowFocused=\(focusedResult.rawValue)."
+                "Could not verify restore of the previously focused window. focusedWindow=\(focusedWindowResult.rawValue), mainWindow=\(mainWindowResult.rawValue), raise=\(raiseResult.rawValue), windowMain=\(mainResult.rawValue), windowFocused=\(focusedResult.rawValue), sessionClick=\(sessionClickResult), refocusedWindow=\(refocusedWindowResult.rawValue)."
             )
             return
         }
@@ -102,7 +138,7 @@ public final class AXFocusRestorer: FocusRestorer {
 
     private func isWindowFocused(_ capturedWindow: CapturedWindow) -> Bool {
         guard let focusedApplication = copyElementAttribute(systemWideElement, attribute: kAXFocusedApplicationAttribute),
-              CFEqual(focusedApplication, capturedWindow.application) else {
+              elementsMatch(focusedApplication, capturedWindow.application) else {
             return false
         }
 
@@ -110,7 +146,26 @@ public final class AXFocusRestorer: FocusRestorer {
             return false
         }
 
-        return CFEqual(focusedWindow, capturedWindow.window)
+        return elementsMatch(focusedWindow, capturedWindow.window)
+    }
+
+    /// Compares AX elements, falling back to pid equality for application
+    /// elements because CFEqual can fail across separately copied tokens.
+    private func elementsMatch(_ lhs: AXUIElement, _ rhs: AXUIElement) -> Bool {
+        if CFEqual(lhs, rhs) {
+            return true
+        }
+
+        var lhsPid: pid_t = 0
+        var rhsPid: pid_t = 0
+        guard AXUIElementGetPid(lhs, &lhsPid) == .success,
+              AXUIElementGetPid(rhs, &rhsPid) == .success else {
+            return false
+        }
+
+        // Same pid alone is not sufficient for windows, but combined with the
+        // focused-window comparison path it prevents spurious app mismatches.
+        return lhsPid == rhsPid && CFHash(lhs) == CFHash(rhs)
     }
 
     private func clickCapturedWindowTitleBar(_ capturedWindow: CapturedWindow) -> Bool {

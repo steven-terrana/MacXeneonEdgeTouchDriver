@@ -1,0 +1,27 @@
+# Deterministic benchmarks after: single persistent stuck-gesture timer
+#                                  + move-event coalescing (latest-point slot)
+# date: 2026-08-09
+# note: staleness metric changed from per-enqueued-move to per-processed-move
+#       (coalescing legitimately drops superseded moves), tracked by mapped point.
+
+== drag throughput (10000 moves, burst) ==
+  total=26.4ms events=10002 mean=2.64us/event throughput=379464 events/s
+  processed-move staleness: n=987 p50=13764.3us p90=23999.7us p99=25908.3us max=26182.1us
+  posted: down=1 drags=987 up=1 (coalescing drops superseded moves)
+
+== backlog staleness (500 moves, 2000us sink delay) ==
+  processed-move staleness: n=2 p50=3108.4us p90=3108.4us p99=3108.4us max=6132.8us
+  final point ok: true (moves processed: 2/500; coalescing drops superseded moves)
+
+== parser throughput (1000000 reports) ==
+  total=26.5ms mean=26ns/report events=1000000
+
+# vs baseline:
+# - Timer churn fix (measured separately, pre-coalescing): drag mean
+#   3.27us/event -> 0.82-1.22us/event (~3x); with coalescing the burst path
+#   does slot bookkeeping so mean is ~2.6us/event, but only fresh moves reach
+#   the input sink.
+# - Backlog staleness: p50 639.9ms / max 1270.7ms -> p50 3.1ms / max 6.1ms
+#   (~200x better). Under a 2ms-per-event consumer, the old queue replayed all
+#   500 stale positions over ~1.3s; the new path posts only the freshest
+#   position and lands on the correct final point.

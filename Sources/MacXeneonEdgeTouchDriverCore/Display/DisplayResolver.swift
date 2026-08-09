@@ -64,7 +64,8 @@ public final class DisplayResolver {
         self.init(configuration: configuration, activeDisplayProvider: Self.activeDisplaySnapshots)
     }
 
-    init(
+    /// Creates a display resolver with an injectable display source for tests and benchmarks.
+    public init(
         configuration: DriverConfiguration.Display = DriverConfiguration.defaults.display,
         activeDisplayProvider: @escaping () -> [DisplaySnapshot]
     ) {
